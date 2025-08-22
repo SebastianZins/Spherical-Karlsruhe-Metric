@@ -1,0 +1,32 @@
+#pragma kernel CSMain
+
+RWTexture2D<float4> Result;
+
+struct PointData
+{
+    float3 position;
+};
+
+Texture2D<float4> pointsTexture; // Texture representing the points data
+
+[numthreads(8, 8, 1)]
+void CSMain (uint3 id : SV_DispatchThreadID)
+{
+    float minDistance = 10000.0; // Set a large initial value
+    float2 uv = id.xy / _ScreenParams.xy; // Normalize to get UV coordinates
+    
+    for (int i = 0; i < pointsTexture.width; i++)
+    {
+        PointData point = LoadPoint(i); // Load point data from texture
+        float distance = distance(point.position, uv); // Calculate distance to point
+        minDistance = min(minDistance, distance); // Find the minimum distance
+    }
+    
+    Result[id.xy] = minDistance * float4(1, 1, 1, 1); // Output distance as grayscale
+}
+
+PointData LoadPoint(int index)
+{
+    float3 position = pointsTexture.Load(int3(index, 0, 0)).xyz;
+    return (PointData)position;
+}
