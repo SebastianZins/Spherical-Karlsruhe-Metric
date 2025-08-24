@@ -63,6 +63,7 @@
   <ItemGroup>
     <Compile Include="Assets\Custom\CreatePoints.cs" />
     <Compile Include="Assets\Custom\VoronoiSphere.cs" />
+    <Compile Include="Assets\Custom\RotateSphere.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\Custom\VoronoiSphereShader.shader" />

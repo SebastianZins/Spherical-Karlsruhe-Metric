@@ -4,6 +4,7 @@ Shader "Custom/VoronoiOnSphere"
     {
         _PointCount("Point Count", Int) = 5
         _Radius("Radius", Float) = 1.0
+        [Enum(Euclidean, 0, Spherical, 1)] _MetricType("Metric Type", Float) = 1
     }
     SubShader
     {
@@ -22,6 +23,7 @@ Shader "Custom/VoronoiOnSphere"
             uniform float4 _PointSphericalCoords[1028]; // Maximum of 128 points
             uniform fixed4 _Colors[1028];
             uniform float _Radius;
+            uniform float _MetricType;
 
             struct appdata
             {
@@ -82,36 +84,39 @@ Shader "Custom/VoronoiOnSphere"
                     // define points
                     float3 sphericalPointPos = _PointSphericalCoords[j].xyz;
                     float3 euclideanPointPos = SphericalToEuclidean(_PointSphericalCoords[j]);
-
+                    float distance = 0;
                     
-                    // euclidean distance
-                    float distance = sqrt( pow(worldPos.x - euclideanPointPos.x, 2) + pow(worldPos.y - euclideanPointPos.y,2) + pow(worldPos.z - euclideanPointPos.z,2) );
-
-
-                    // spherical distance
-                    distance = 0;
-                    float angularDistancePhi = abs( sphericalPointPos.z - sphericalWorldPos.z );            
-
-                    // check for angular distance:
-                    // if <= 2 calc direct dist, else calc shortest dist over poles
-                    if ( angularDistancePhi <= 2)
+                    if (_MetricType == 0)
                     {
-                        // calculate direct distance only moving along longitute half-circles and latitude circles
-                        float minLatCircle = _Radius * min(  sin(sphericalPointPos.z), sin(sphericalWorldPos.z) );
-                        float angularDistanceTheta = abs(min( abs(sphericalPointPos.y - sphericalWorldPos.y), 2 * PI - abs(sphericalPointPos.y - sphericalWorldPos.y) ));
-
-                        distance = minLatCircle * angularDistanceTheta +  _Radius *  angularDistancePhi ;     
+                        // euclidean distance 
+                        distance = sqrt( pow(worldPos.x - euclideanPointPos.x, 2) + pow(worldPos.y - euclideanPointPos.y,2) + pow(worldPos.z - euclideanPointPos.z,2) );
                     }
-                    else 
+                    else if (_MetricType == 1)
                     {
-                        // calculate shortest distance over one of the poles along longitude half-circles
+                        // spherical distance
+                        distance = 0;
+                        float angularDistancePhi = abs( sphericalPointPos.z - sphericalWorldPos.z );            
 
-                        float distanceOverNorthPole = sphericalWorldPos.z + sphericalPointPos.z;
-                        float distanceOverSouthPole = abs( PI - sphericalWorldPos.z) + abs( PI - sphericalPointPos.z);
+                        // check for angular distance:
+                        // if <= 2 calc direct dist, else calc shortest dist over poles
+                        if ( angularDistancePhi <= 2)
+                        {
+                            // calculate direct distance only moving along longitute half-circles and latitude circles
+                            float minLatCircle = _Radius * min(  sin(sphericalPointPos.z), sin(sphericalWorldPos.z) );
+                            float angularDistanceTheta = abs(min( abs(sphericalPointPos.y - sphericalWorldPos.y), 2 * PI - abs(sphericalPointPos.y - sphericalWorldPos.y) ));
 
-                        distance = _Radius * min( distanceOverNorthPole, distanceOverSouthPole );
+                            distance = minLatCircle * angularDistanceTheta +  _Radius *  angularDistancePhi ;     
+                        }
+                        else 
+                        {
+                            // calculate shortest distance over one of the poles along longitude half-circles
+
+                            float distanceOverNorthPole = sphericalWorldPos.z + sphericalPointPos.z;
+                            float distanceOverSouthPole = abs( PI - sphericalWorldPos.z) + abs( PI - sphericalPointPos.z);
+
+                            distance = _Radius * min( distanceOverNorthPole, distanceOverSouthPole );
+                        }
                     }
-
 
                     if (distance < minDist)
                     {
