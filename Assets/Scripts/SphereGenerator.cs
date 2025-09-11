@@ -108,6 +108,9 @@ public class SphereGenerator : MonoBehaviour
     public void UpdatePointPositionSpherical()
     {
         SetPointPositionShaderData();
+
+        List<ReferencePointHandler> spherePoints = GetReferencePointsHandlers();
+        _mercatorProjectionData.UpdatePointPositions();
     }
 
     public void UpdatePointColor()

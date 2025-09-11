@@ -111,6 +111,15 @@ public class CreateProjection : MonoBehaviour
         GeneratePoints(refPointRadius, radius, spherePoints);
     }
 
+    public void UpdatePointPositions()
+    {
+        foreach (var point in GetReferencePointsHandlers())
+        {
+            point.UpdatePosition();
+        }
+        SetPointPositionShaderData();
+    }
+
     private void GeneratePoints(float refPointRadius, float radius, List<ReferencePointHandler> spherePoints)
     {
         Renderer renderer = GetComponent<Renderer>();
@@ -172,6 +181,14 @@ public class CreateProjection : MonoBehaviour
             }
         }
         return points;
+    }
+
+    public List<ProjectionReferencePoint> GetReferencePointsHandlers()
+    {
+        List<ProjectionReferencePoint> spherePoints = GetReferencePoints()
+            .Select(point => point.GetComponent<ProjectionReferencePoint>())
+            .ToList();
+        return spherePoints;
     }
 
     private void SetPointPositionShaderData()

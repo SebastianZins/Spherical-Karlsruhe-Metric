@@ -9,9 +9,12 @@ public class ProjectionReferencePoint : MonoBehaviour
     private float _sphereRadius;
     private GameObject _innerCircle;
     private Material _innerCircleMaterial;
+    private ReferencePointHandler _ogPoint;
 
     public void InitializePoint(ReferencePointHandler spherePoint, Transform parent, Vector2 projectionScale)
     {
+        _ogPoint = spherePoint;
+
         GetComponent<Renderer>().material = new Material(Shader.Find("Unlit/Color"));
         GetComponent<Renderer>().material.color = Color.black;
 
@@ -45,6 +48,12 @@ public class ProjectionReferencePoint : MonoBehaviour
     //    _euclideanPosition = position;
     //    _sphericalPosition = ConvertToSpherical(_euclideanPosition);
     //}
+
+    public void UpdatePosition()
+    {
+        Vector2 sphericalPosition = _ogPoint.sphericalPosition;
+        SetSphericalPosition(sphericalPosition);
+    }
 
     public Vector4 GetSphericalPosition4()
     {
@@ -100,7 +109,7 @@ public class ProjectionReferencePoint : MonoBehaviour
         x *= _projectionScale.x * 0.5f;
         x -= _projectionScale.x * 0.25f;
         // Clamp at north / southpole to avoid exponantially exploding tan behaviour at -90deg / 90deg
-        float epsilon = 1e-6f;
+        float epsilon = 0.15f;
         y = Mathf.Clamp(y, -_projectionScale.y * (0.5f - epsilon), _projectionScale.y * (0.5f - epsilon));
 
         Vector3 mercatorPos = new Vector3(x, 0f, y);
