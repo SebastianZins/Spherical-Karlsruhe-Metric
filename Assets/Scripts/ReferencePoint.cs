@@ -13,8 +13,17 @@ public class ReferencePointHandler : MonoBehaviour
     public float pointRadius;
     private float _oldPointRadius;
 
+    private Camera _cam;
+    private bool _isDragging = false;
+
+    void Start()
+    {
+        _cam = Camera.main;
+    }
+
     void Update()
     {
+
         if (euclideanPosition != _oldEuclideanPosition)
         {
             SetEuclideanPosition(euclideanPosition);
@@ -55,10 +64,11 @@ public class ReferencePointHandler : MonoBehaviour
 
     public void SetEuclideanPosition(Vector3 position)
     {
-        _oldEuclideanPosition = position;
-        euclideanPosition = position;
+        transform.position = position;
+        _oldEuclideanPosition = transform.localPosition;
+        euclideanPosition = transform.localPosition;
 
-        sphericalPosition = ConvertToSpherical(euclideanPosition);
+        sphericalPosition = ConvertWorldPosToSpherical(transform.localPosition);
         _oldSphericalPosition = sphericalPosition;
         transform.parent.GetComponent<SphereGenerator>().UpdatePointPositionSpherical();
     }
@@ -80,10 +90,10 @@ public class ReferencePointHandler : MonoBehaviour
         _oldEuclideanPosition = euclideanPosition;
 
         SetWorldPosition(euclideanPosition);
-        if (!init)
-        {
-            transform.parent.GetComponent<SphereGenerator>().UpdatePointPositionSpherical();
-        }
+        //if (!init)
+        //{
+        //    transform.parent.GetComponent<SphereGenerator>().UpdatePointPositionSpherical();
+        //}
     }
 
     public void SetColor(Color color)
@@ -117,11 +127,10 @@ public class ReferencePointHandler : MonoBehaviour
         SetColor(new Color(Random.value, Random.value, Random.value, 1));
     }
 
-    private static Vector2 ConvertToSpherical(Vector3 euclidPos)
+    private Vector2 ConvertWorldPosToSpherical(Vector3 euclidPos)
     {
-        float r = euclidPos.magnitude;
-        float theta = Mathf.Atan2(euclidPos.z, euclidPos.x);
-        float phi = Mathf.Acos(euclidPos.y / r);
+        float theta = Mathf.Atan2(euclidPos.y, euclidPos.x);
+        float phi = Mathf.Acos(euclidPos.z * 2);
 
         return new Vector2(theta, phi);
     }
@@ -137,11 +146,43 @@ public class ReferencePointHandler : MonoBehaviour
 
     private void SetWorldPosition(Vector3 localPoint)
     {
-        Quaternion rotation = transform.parent.transform.localRotation; ;
-        Vector3 rotatedPoint = transform.parent.transform.rotation * localPoint;
+        Quaternion rotation = transform.parent.transform.rotation;
+        Vector3 rotatedPoint = rotation * localPoint;
         Vector3 newPoint = transform.parent.transform.position + rotatedPoint;
 
         transform.position = newPoint;
         transform.rotation = rotation;
+    }
+
+    private void HandleDragging()
+    {
+        if (Input.GetMouseButtonDown(0))
+        {
+            Ray ray = _cam.ScreenPointToRay(Input.mousePosition);
+            if (Physics.Raycast(ray, out RaycastHit hit))
+            {
+                if (hit.transform != null && hit.transform.CompareTag(Constants.REFERENCE_POINT_TAG))
+                {
+                    _isDragging = true;
+                }
+            }
+        }
+
+        if (Input.GetMouseButtonUp(0))
+        {
+            _isDragging = false;
+        }
+
+        if (_isDragging)
+        {
+            Ray ray = _cam.ScreenPointToRay(Input.mousePosition);
+            if (Physics.Raycast(ray, out RaycastHit hit))
+            {
+                Vector3 direction = (hit.point - transform.position).normalized;
+                float radius = transform.localScale.x * 0.5f;
+                //selectedChild.position = transform.position + direction * radius;
+                SetEuclideanPosition(transform.position + direction * radius);
+            }
+        }
     }
 }

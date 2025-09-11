@@ -43,9 +43,8 @@ public class PointDragger : MonoBehaviour
             if (Physics.Raycast(ray, out RaycastHit hit))
             {
                 Vector3 direction = (hit.point - transform.position).normalized;
-                float radius = transform.localScale.x * 0.5f; 
-                //selectedChild.position = transform.position + direction * radius;
-                hit.transform.GetComponent<ReferencePointHandler>().SetEuclideanPosition(transform.position + direction * radius);
+                float radius = transform.localScale.x * 0.5f;
+                selectedChild.GetComponent<ReferencePointHandler>().SetEuclideanPosition(transform.position + direction * radius);
             }
         }
     }
