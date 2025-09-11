@@ -1,0 +1,200 @@
+Shader "Custom/VoronoiOnSphere"
+{
+    SubShader
+    {
+        Tags { "RenderType"="Opaque" }
+        LOD 100
+
+        Pass
+        {
+            CGPROGRAM
+            #pragma vertex vert
+            #pragma fragment frag
+            #include "UnityCG.cginc"
+
+            // Properties
+            uniform int _PointCount;
+            uniform StructuredBuffer<float4> _PointSphericalCoords;
+            uniform StructuredBuffer<float4> _Colors;
+            uniform float _Radius;
+            uniform float _ClosestDistance;
+            uniform float _MetricType;
+            uniform float _ShowGrid;
+            uniform float _MaxDistancePercentage = 100;
+
+            struct appdata
+            {
+                float4 vertex : POSITION;
+                float3 normal : NORMAL;
+            };
+
+            struct v2f
+            {
+                float4 pos : SV_POSITION;
+                float3 localPos : TEXCOORD0; // Using local position instead of world position
+            };
+
+            v2f vert(appdata v)
+            {
+                v2f o;
+                o.pos = UnityObjectToClipPos(v.vertex);
+                o.localPos = v.vertex.xyz; // Store local position
+                return o;
+            }
+
+            float3 SphericalToEuclidean(float4 spherical)
+            {
+                float radius = spherical.x;
+                float theta = spherical.y;
+                float phi = spherical.z;
+
+                float x = radius * sin(phi) * cos(theta);
+                float y = radius * sin(phi) * sin(theta);
+                float z = radius * cos(phi);
+
+                return float3(x, y, z);
+            }
+        
+            float3 EuclideanToSpherical(float3 euclidean)
+            {
+                float radius = length(euclidean);
+                float theta = atan2(euclidean.y, euclidean.x);
+                float phi = acos(euclidean.z / radius);
+            
+                return float3(radius, theta, phi);
+            }
+
+            float4 applyGrid(float3 sphericalWorldPos, float4 color) 
+            {
+                if (_ShowGrid == 1) {
+                    bool isGrid = false;
+                    if (
+                        (round(degrees(sphericalWorldPos.y) * 2) / 2) % 90 == 0 ||
+                        (round(degrees(sphericalWorldPos.y) * 4) / 4) % 30 == 0 ||
+                        (round(degrees(sphericalWorldPos.y) * 6) / 6) % 10 == 0
+                    ) {
+                        isGrid = true;
+                    }
+                    if (
+                        (round(degrees(sphericalWorldPos.z) * 2) / 2) % 90 == 0 ||
+                        (round(degrees(sphericalWorldPos.z) * 4) / 4) % 30 == 0 ||
+                        (round(degrees(sphericalWorldPos.z) * 6) / 6) % 10 == 0
+                    ) {
+                        isGrid = true;
+                    }
+                    if (isGrid)
+                    {
+                        if (color.x == 0 && color.y == 0 && color.z == 0)
+                        {
+                            return float4(1,1,1,1);
+                        }
+                        else 
+                        {
+                            return float4(0,0,0,1);
+                        }
+                    }
+                }
+                return color;
+            }
+
+            fixed4 frag(v2f i) : SV_Target
+            {
+                float3 worldPos = i.localPos;
+                float3 sphericalWorldPos = EuclideanToSpherical(worldPos);
+
+                // Initialize minimum distance
+                float refDistEuclid = _ClosestDistance == 1 ? 1e20 : -1e20;
+                float finalColorIndexEuclid = 0;
+
+                float refDistKarlsruhe = _ClosestDistance == 1 ? 1e20 : -1e20;
+                float finalColorIndexKarlsruhe = 0;
+
+                for (int j = 0; j < _PointCount; j++) 
+                {
+
+                    // define points
+                    float3 sphericalPointPos = _PointSphericalCoords[j].xyz;
+                    float3 euclideanPointPos = SphericalToEuclidean(_PointSphericalCoords[j]);
+                    
+                    // euclidean distance 
+                    float distanceEuclid = sqrt( 
+                            pow(worldPos.x - euclideanPointPos.x, 2) + 
+                            pow(worldPos.y - euclideanPointPos.y,2) + 
+                            pow(worldPos.z - euclideanPointPos.z,2) 
+                        );
+                    
+                    // spherical distance
+                    float distanceKarlsruhe = 0;
+                    float angularDistancePhi = abs( sphericalPointPos.z - sphericalWorldPos.z );            
+
+                    // check for angular distance:
+                    // if <= 2 calc direct dist, else calc shortest dist over poles
+                    if ( angularDistancePhi <= 2)
+                    {
+                        // calculate direct distance only moving along longitute half-circles and latitude circles
+                        float minLatCircle = _Radius * min(  sin(sphericalPointPos.z), sin(sphericalWorldPos.z) );
+                        float angularDistanceTheta = abs(min( abs(sphericalPointPos.y - sphericalWorldPos.y), 2 * UNITY_PI - abs(sphericalPointPos.y - sphericalWorldPos.y) ));
+
+                        distanceKarlsruhe = minLatCircle * angularDistanceTheta +  _Radius *  angularDistancePhi ;     
+                    }
+                    else 
+                    {
+                        // calculate shortest distance over one of the poles along longitude half-circles
+
+                        float distanceOverNorthPole = sphericalWorldPos.z + sphericalPointPos.z;
+                        float distanceOverSouthPole = abs( UNITY_PI - sphericalWorldPos.z) + abs( UNITY_PI - sphericalPointPos.z);
+
+                        distanceKarlsruhe = _Radius * min( distanceOverNorthPole, distanceOverSouthPole );
+                    }
+
+                    if (_MetricType == 0 || _MetricType == 2) {
+                        if (_ClosestDistance == 1 ? distanceEuclid < refDistEuclid : distanceEuclid > refDistEuclid)
+                        {
+                            refDistEuclid = distanceEuclid;
+                            finalColorIndexEuclid = j;
+                        }
+                    } 
+                    
+                    if (_MetricType == 1 || _MetricType == 2) {
+                        if (_ClosestDistance == 1 ? distanceKarlsruhe < refDistKarlsruhe : distanceKarlsruhe > refDistKarlsruhe)
+                        {
+                            refDistKarlsruhe = distanceKarlsruhe;
+                            finalColorIndexKarlsruhe = j;
+                        }
+                    } 
+                }
+
+                if (_MetricType == 2) 
+                {
+                    float4 color = finalColorIndexEuclid == finalColorIndexKarlsruhe 
+                        ? _Colors[finalColorIndexEuclid] 
+                        : float4(0, 0, 0, 1);
+                    return applyGrid(sphericalWorldPos, color);
+                }
+                else
+                {
+                    if (_MetricType == 0) 
+                    {
+                        float4 color = _Colors[finalColorIndexEuclid];
+                        if (_MaxDistancePercentage > 0 && refDistEuclid > (_Radius - 0.5  + (_MaxDistancePercentage / 100))) 
+                        {
+                            color = float4(0,0,0,1);
+                        }
+                        return applyGrid(sphericalWorldPos, color);
+                    }
+                    else
+                    {
+                        float4 color = _Colors[finalColorIndexKarlsruhe];
+                        if (_MaxDistancePercentage > 0 && refDistKarlsruhe > (UNITY_PI * _Radius) * (_MaxDistancePercentage / 100)) 
+                        {
+                            color = float4(0,0,0,1);
+                        }
+                        return applyGrid(sphericalWorldPos, color);
+                    }
+                }
+            }
+            ENDCG
+        }
+    }
+    FallBack "Diffuse"
+}
