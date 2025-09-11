@@ -38,6 +38,21 @@ public class ReferencePointHandler : MonoBehaviour
         }
     }
 
+    public void InitializePoint(float radius, float referencePointRadius, Vector2? position = null)
+    {
+        if (position == null)
+        {
+            SetRandomSphericalPosition(radius, true);
+        }
+        else
+        {
+            SetSphericalPosition(radius, (Vector2)position, true);
+        }
+
+        SetPointRadius(referencePointRadius);
+        SetRandomColor();
+    }
+
     public void SetEuclideanPosition(Vector3 position)
     {
         _oldEuclideanPosition = position;

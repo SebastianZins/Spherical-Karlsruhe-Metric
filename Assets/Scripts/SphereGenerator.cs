@@ -6,14 +6,18 @@ public class SphereGenerator : MonoBehaviour
 {
     public bool showCoordGrid = true;
     public int numOfPoints = 100;
-    public float refPointRadius = 1f;
+    public float refPointRadius = 2f;
     [HideInInspector]
     public float radius;
+
     public EMetricType metricType = EMetricType.Spherical;
     public bool useClosestDistance = true;
     private bool _showPoles = true;
+
     private Material _sphereMaterial;
     public Shader voronoiShader;
+    public GameObject mercatorProjection;
+    private CreateProjection _mercatorProjectionData;
 
 
     void Start()
@@ -22,6 +26,10 @@ public class SphereGenerator : MonoBehaviour
         radius = transform.localScale.x * 0.5f;
 
         GeneratePoints();
+
+        List<ReferencePointHandler> spherePoints = GetReferencePointsHandlers();
+        _mercatorProjectionData = mercatorProjection.GetComponent<CreateProjection>();
+        _mercatorProjectionData.InitializeProjection(refPointRadius, radius, spherePoints);
     }
 
     public void SetPointCount(string countString)
@@ -31,6 +39,9 @@ public class SphereGenerator : MonoBehaviour
             numOfPoints = count;
             DeleteChildObjects();
             GeneratePoints();
+
+            List<ReferencePointHandler> spherePoints = GetReferencePointsHandlers();
+            _mercatorProjectionData.UpdatePoints(refPointRadius, radius, spherePoints);
             Debug.Log("Number of points changed: " + count);
         }
         else
@@ -45,6 +56,8 @@ public class SphereGenerator : MonoBehaviour
         {
             refPointRadius = radius;
             ResizePoints();
+
+            _mercatorProjectionData.SetPointRadius(radius);
             Debug.Log("Point radius changed: " + radius);
         }
         else
@@ -57,6 +70,8 @@ public class SphereGenerator : MonoBehaviour
     {
         useClosestDistance = useClosest;
         SetShaderMetricProperties();
+
+        _mercatorProjectionData.SetUseClosestDistance(useClosest);
         Debug.Log("Use closest distance metric changed: " + useClosest);
     }
 
@@ -64,6 +79,8 @@ public class SphereGenerator : MonoBehaviour
     {
         this.showCoordGrid = showCoordGrid;
         SetShaderMetricProperties();
+
+        _mercatorProjectionData.SetShowCoordGrid(showCoordGrid);
         Debug.Log("Show grid flag changed: " + showCoordGrid);
     }
 
@@ -71,6 +88,8 @@ public class SphereGenerator : MonoBehaviour
     {
         this.metricType = (EMetricType)metricType;
         SetShaderMetricProperties();
+
+        _mercatorProjectionData.SetMetricType(this.metricType);
         Debug.Log("Metric type changed: " + metricType);
     }
 
@@ -105,14 +124,11 @@ public class SphereGenerator : MonoBehaviour
         {
             GameObject pointObject = GameObject.CreatePrimitive(PrimitiveType.Sphere);
             pointObject.transform.parent = transform;
-            pointObject.name = $"Reference Point [{i}]";
             pointObject.tag = Constants.REFERENCE_POINT_TAG;
-            pointObject.AddComponent<ReferencePointHandler>();
+            ReferencePointHandler pointHandler = pointObject.AddComponent<ReferencePointHandler>();
+            pointHandler.InitializePoint(radius, refPointRadius);
 
-            ReferencePointHandler point = pointObject.GetComponent<ReferencePointHandler>();
-            point.SetRandomSphericalPosition(radius, true);
-            point.SetPointRadius(refPointRadius);
-            point.SetRandomColor();
+            pointObject.name = $"Reference Point [{pointHandler.sphericalPosition.x}, {pointHandler.sphericalPosition.y}]";
         }
 
         if (numOfPoints > 0)
@@ -141,6 +157,14 @@ public class SphereGenerator : MonoBehaviour
         return points;
     }
 
+    public List<ReferencePointHandler> GetReferencePointsHandlers()
+    {
+        List<ReferencePointHandler> spherePoints = GetReferencePoints()
+            .Select(point => point.GetComponent<ReferencePointHandler>())
+            .ToList();
+        return spherePoints;
+    }
+
     private void ResizePoints()
     {
         foreach (Transform point in GetReferencePoints())
@@ -153,7 +177,7 @@ public class SphereGenerator : MonoBehaviour
     {
         foreach (Transform point in GetReferencePoints())
         {
-            Destroy(point.gameObject);
+            DestroyImmediate(point.gameObject);
         }
     }
 

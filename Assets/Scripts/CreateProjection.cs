@@ -1,7 +1,9 @@
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class CreateProjection : MonoBehaviour
@@ -9,13 +11,8 @@ public class CreateProjection : MonoBehaviour
     [Header("Projection Settings")]
     public GameObject sphere;
 
-    private int _pointCount = 0;
-    private float _refPointRadius = 0;
-
-    private float _scaleWidth = 10f;
-    private float _scaleHeight = 5f;
-
-    private Material projectionMaterial;
+    private Material _projectionMaterial;
+    public Shader voronoiShader;
 
     private EMetricType _metricType = EMetricType.Spherical;
     private bool _useClosestDistance = true;
@@ -24,154 +21,193 @@ public class CreateProjection : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        projectionMaterial = GetComponent<Renderer>().material;
-        _scaleWidth = transform.lossyScale.x;
-        _scaleHeight = transform.lossyScale.z;
+        _projectionMaterial = GetComponent<Renderer>().material;
+    }
+
+    public void UpdatePointPosition()
+    {
+
+    }
+
+    public void UpdatePointColor()
+    {
+
+    }
+
+    public void SetPointRadius(float radius)
+    {
+        ResizePoints(radius);
+    }
+
+    public void SetUseClosestDistance(bool useClosest)
+    {
+        _useClosestDistance = useClosest;
+        SetShaderMetricProperties();
+    }
+
+    public void SetShowCoordGrid(bool showCoordGrid)
+    {
+        _showCoordGrid = showCoordGrid;
+        SetShaderMetricProperties();
+    }
+
+    public void SetMetricType(EMetricType metricType)
+    {
+        _metricType = metricType;
+        SetShaderMetricProperties();
     }
 
     // Update is called once per frame
     void Update()
     {
-        int pointCount = sphere.GetComponent<SphereGenerator>().numOfPoints;
-        if (_pointCount != pointCount)
+        //int pointCount = sphere.GetComponent<SphereGenerator>().numOfPoints;
+        //if (_pointCount != pointCount)
+        //{
+        //    _pointCount = pointCount;
+        //    DeleteChildObjects();
+        //    //GeneratePoints();
+        //}
+
+        //float refPointRadius = sphere.GetComponent<SphereGenerator>().refPointRadius;
+        //if (_refPointRadius != refPointRadius)
+        //{
+        //    _refPointRadius = refPointRadius;
+        //    ResizePoints();
+        //}
+
+        //float scaleWidth = transform.lossyScale.x;
+        //float scaleHeight = transform.lossyScale.z;
+        //if (scaleWidth != _scaleWidth || scaleHeight != _scaleHeight)
+        //{
+        //    _scaleHeight = scaleHeight;
+        //    _scaleWidth = scaleWidth;
+        //    RepositionPoints();
+        //}
+
+        //EMetricType metricType = sphere.GetComponent<SphereGenerator>().metricType;
+        //bool useClosestDistance = sphere.GetComponent<SphereGenerator>().useClosestDistance;
+        //bool showCoordGrid = sphere.GetComponent<SphereGenerator>().showCoordGrid;
+
+        //if (
+        //    useClosestDistance != _useClosestDistance ||
+        //    metricType != _metricType ||
+        //    showCoordGrid != _showCoordGrid)
+        //{
+        //    _useClosestDistance = useClosestDistance;
+        //    _metricType = metricType;
+        //    _showCoordGrid = showCoordGrid;
+        //    SetShaderMetricProperties();
+        //}
+    }
+
+    public void InitializeProjection(float refPointRadius, float radius, List<ReferencePointHandler> spherePoints)
+    {
+        GeneratePoints(refPointRadius, radius, spherePoints);
+    }
+
+    public void UpdatePoints(float refPointRadius, float radius, List<ReferencePointHandler> spherePoints)
+    {
+        DeleteChildObjects();
+        GeneratePoints(refPointRadius, radius, spherePoints);
+    }
+
+    private void GeneratePoints(float refPointRadius, float radius, List<ReferencePointHandler> spherePoints)
+    {
+        Renderer renderer = GetComponent<Renderer>();
+        Destroy(renderer.material);
+
+        Vector2 projectionScale = new Vector2(transform.lossyScale.x, transform.lossyScale.z);
+
+        foreach (var spherePoint in spherePoints)
         {
-            _pointCount = pointCount;
-            DeleteChildObjects();
-            //GeneratePoints();
+            GameObject pointObject = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            pointObject
+                .AddComponent<ProjectionReferencePoint>()
+                .InitializePoint(spherePoint, transform, projectionScale);
         }
 
-        float refPointRadius = sphere.GetComponent<SphereGenerator>().refPointRadius;
-        if (_refPointRadius != refPointRadius)
+        if (spherePoints.Count > 0)
         {
-            _refPointRadius = refPointRadius;
-            ResizePoints();
-        }
-
-        float scaleWidth = transform.lossyScale.x;
-        float scaleHeight = transform.lossyScale.z;
-        if (scaleWidth != _scaleWidth || scaleHeight != _scaleHeight)
-        {
-            _scaleHeight = scaleHeight;
-            _scaleWidth = scaleWidth;
-            RepositionPoints();
-        }
-
-        EMetricType metricType = sphere.GetComponent<SphereGenerator>().metricType;
-        bool useClosestDistance = sphere.GetComponent<SphereGenerator>().useClosestDistance;
-        bool showCoordGrid = sphere.GetComponent<SphereGenerator>().showCoordGrid;
-
-        if (
-            useClosestDistance != _useClosestDistance ||
-            metricType != _metricType ||
-            showCoordGrid != _showCoordGrid)
-        {
-            _useClosestDistance = useClosestDistance;
-            _metricType = metricType;
-            _showCoordGrid = showCoordGrid;
+            _projectionMaterial = new Material(voronoiShader);
+            _projectionMaterial.SetInt("_PointCount", spherePoints.Count);
+            _projectionMaterial.SetFloat("_Radius", radius);
+            _projectionMaterial.SetVector("_Scale", projectionScale);
+            SetPointPositionShaderData();
+            SetPointColorShaderData();
             SetShaderMetricProperties();
+            renderer.material = _projectionMaterial;
         }
     }
 
     void DeleteChildObjects()
     {
-        for (int i = 0; i < transform.childCount; i++)
+        foreach (var point in GetReferencePoints())
         {
-            Transform child = transform.GetChild(i);
-            Destroy(child.gameObject);
+            DestroyImmediate(point.gameObject);
         }
     }
 
-    void ResizePoints()
+    //void RepositionPoints()
+    //{
+    //    projectionMaterial.SetVector("_Scale", new Vector2(_scaleWidth, _scaleHeight));
+    //}
+
+    public void ResizePoints(float refPointRadius)
     {
-        for (int i = 0; i < transform.childCount; i++)
+        foreach (Transform point in GetReferencePoints())
         {
-            Transform child = transform.GetChild(i);
-            child.transform.localScale = new Vector3(
-                _refPointRadius / transform.lossyScale.x * 0.8f,
-                _refPointRadius / transform.lossyScale.y * 0.8f,
-                _refPointRadius / transform.lossyScale.z * 0.8f
-            );
+            point.GetComponent<ProjectionReferencePoint>().SetPointRadius(refPointRadius);
         }
     }
 
-    void RepositionPoints()
+    public List<Transform> GetReferencePoints()
     {
-        projectionMaterial.SetVector("_Scale", new Vector2(_scaleWidth, _scaleHeight));
+        List<Transform> points = new List<Transform>();
+        for (int i = 0; i < transform.childCount; i++)
+        {
+            Transform child = transform.GetChild(i);
+            if (child.CompareTag(Constants.REFERENCE_POINT_TAG))
+            {
+                points.Add(child);
+            }
+        }
+        return points;
     }
 
-    private void GeneratePoints()
+    private void SetPointPositionShaderData()
     {
-        // TODO: 
-
-        List<ReferencePointHandler> pointHandlers = sphere
-            .GetComponent<SphereGenerator>()
-            .GetReferencePoints()
-            .Select((point) => point.GetComponent<ReferencePointHandler>())
+        List<ProjectionReferencePoint> pointHandlers = GetReferencePoints()
+            .Select((point) => point.GetComponent<ProjectionReferencePoint>())
             .ToList();
-
-        List<Vector4> pointPositionsSpherical = pointHandlers.Select((p) => new Vector4(p.radius, p.sphericalPosition.x, p.sphericalPosition.y, 0)).ToList();
-        List<Color> colors = pointHandlers.Select((p) => p.color).ToList();
-
-        _pointCount = pointPositionsSpherical.Count;
-
-        for (int i = 0; i < pointPositionsSpherical.Count; i++)
-        {
-            Vector3 localMercatorPos = ToMercatorProjection(pointPositionsSpherical[i]);
-            Vector3 mercatorPos = transform.TransformPoint(localMercatorPos);
-
-            //p/ointObject.transform.localScale = new Vector3(refPointRadius / 10, refPointRadius / 10, (_scaleWidth / _scaleHeight) * refPointRadius / 10);
-
-            GameObject pointObject = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            pointObject.transform.parent = transform;
-            pointObject.transform.position = mercatorPos;
-            pointObject.transform.localScale = new Vector3(
-                _refPointRadius / transform.lossyScale.x * 0.8f,
-                _refPointRadius / transform.lossyScale.y * 0.8f,
-                _refPointRadius / transform.lossyScale.z * 0.8f
+        ComputeBuffer sphericalCoordsBuffer = new ComputeBuffer(pointHandlers.Count, sizeof(float) * 4);
+        sphericalCoordsBuffer
+            .SetData(
+                pointHandlers
+                    .Select((p) => p.GetSphericalPosition4())
+                    .ToList()
             );
-            pointObject.GetComponent<Renderer>().material.color = colors[i];
-            pointObject.name = $"Reference Point [{i}] <{pointPositionsSpherical[i].y}, {pointPositionsSpherical[i].z}>";
-        }
-        float radius = sphere.GetComponent<SphereGenerator>().refPointRadius;
-
-        if (_pointCount != 0)
-        {
-            ComputeBuffer sphericalCoordsBuffer = new ComputeBuffer(pointPositionsSpherical.Count, sizeof(float) * 4);
-            ComputeBuffer colorsBuffer = new ComputeBuffer(pointPositionsSpherical.Count, sizeof(float) * 4);
-            sphericalCoordsBuffer.SetData(pointPositionsSpherical);
-            colorsBuffer.SetData(colors);
-
-            projectionMaterial.SetInt("_PointCount", pointPositionsSpherical.Count);
-            projectionMaterial.SetBuffer("_PointSphericalCoords", sphericalCoordsBuffer);
-            projectionMaterial.SetBuffer("_Colors", colorsBuffer);
-            projectionMaterial.SetFloat("_Radius", radius);
-            projectionMaterial.SetVector("_Scale", new Vector2(_scaleWidth, _scaleHeight));
-            SetShaderMetricProperties();
-        }
+        _projectionMaterial.SetBuffer("_PointSphericalCoords", sphericalCoordsBuffer);
     }
 
-    private Vector3 ToMercatorProjection(Vector4 sphercialPos)
+    private void SetPointColorShaderData()
     {
-        float theta = sphercialPos.y;
-        float phi = sphercialPos.z;
-
-        float latitude = Mathf.PI / 2f - phi;
-        float x = theta / (2f * Mathf.PI);
-        float y = Mathf.Log(Mathf.Tan(Mathf.PI / 4f + latitude / 2f));
-        // Scale to fit plane
-        x *= _scaleWidth * 0.5f;
-        x -= _scaleWidth * 0.25f;
-        // Clamp at north / southpole to avoid exponantially exploding tan behaviour at -90deg / 90deg
-        y = Mathf.Clamp(y, -_scaleHeight * 0.445f, _scaleHeight * 0.445f);
-
-        Vector3 mercatorPos = new Vector3(x, 0f, y);
-        return mercatorPos;
+        List<ProjectionReferencePoint> pointHandlers = GetReferencePoints()
+            .Select((point) => point.GetComponent<ProjectionReferencePoint>())
+            .ToList();
+        ComputeBuffer colorsBuffer = new ComputeBuffer(pointHandlers.Count, sizeof(float) * 4);
+        colorsBuffer
+            .SetData(
+                pointHandlers
+                    .Select((p) => p.GetColor())
+                    .ToList()
+            );
+        _projectionMaterial.SetBuffer("_Colors", colorsBuffer);
     }
 
     private void SetShaderMetricProperties()
     {
-        projectionMaterial.SetFloat("_ClosestDistance", _useClosestDistance ? 1f : 0f);
-        projectionMaterial.SetFloat("_MetricType", (float)_metricType);
-        projectionMaterial.SetFloat("_ShowGrid", _showCoordGrid ? 1f : 0f);
+        _projectionMaterial.SetFloat("_ClosestDistance", _useClosestDistance ? 1f : 0f);
+        _projectionMaterial.SetFloat("_MetricType", (float)_metricType);
+        _projectionMaterial.SetFloat("_ShowGrid", _showCoordGrid ? 1f : 0f);
     }
 }
