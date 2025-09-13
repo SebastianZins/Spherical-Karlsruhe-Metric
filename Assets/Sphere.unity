@@ -2622,7 +2622,7 @@ GameObject:
   - component: {fileID: 732505450}
   - component: {fileID: 732505449}
   m_Layer: 5
-  m_Name: Text
+  m_Name: Point Radius
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2833,6 +2833,7 @@ GameObject:
   - component: {fileID: 838392169}
   - component: {fileID: 838392168}
   - component: {fileID: 838392171}
+  - component: {fileID: 838392172}
   m_Layer: 0
   m_Name: EventSystem
   m_TagString: Untagged
@@ -2905,6 +2906,29 @@ MonoBehaviour:
   cameras:
   - {fileID: 963194227}
   - {fileID: 859889611}
+--- !u!114 &838392172
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 838392167}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7f9062cb8a4e5434fae63d9e7b70cb60, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  sphereObject: {fileID: 2104122771}
+  showPolesInput: {fileID: 1229355018}
+  showCoordGridInput: {fileID: 552087754}
+  rotateSphereInput: {fileID: 1534333110}
+  rotationSpeedInput: {fileID: 28301999}
+  numOfPointsInput: {fileID: 1023313233}
+  pointRadiusInput: {fileID: 1569684977}
+  metricTypeInput: {fileID: 1641483009}
+  useClosestDistanceInput: {fileID: 730209277}
+  growAnimationActiveInput: {fileID: 398752919}
+  growSpeedInput: {fileID: 1749988307}
 --- !u!1 &856302576
 GameObject:
   m_ObjectHideFlags: 0
@@ -3096,7 +3120,7 @@ GameObject:
   - component: {fileID: 889501469}
   - component: {fileID: 889501468}
   m_Layer: 5
-  m_Name: Grow Animation Distance (percent / frame)
+  m_Name: Grow Animation Speed (percent / frame)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3921,7 +3945,7 @@ GameObject:
   - component: {fileID: 1081127223}
   - component: {fileID: 1081127222}
   m_Layer: 5
-  m_Name: Text
+  m_Name: Rotation Speed
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4605,19 +4629,7 @@ MonoBehaviour:
   m_Group: {fileID: 0}
   onValueChanged:
     m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 2104122776}
-        m_TargetAssemblyTypeName: SphereGenerator, Assembly-CSharp
-        m_MethodName: SetshowPoles
-        m_Mode: 0
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: []
   m_IsOn: 1
 --- !u!1 &1279785866
 GameObject:
@@ -4946,7 +4958,7 @@ GameObject:
   - component: {fileID: 1397874677}
   - component: {fileID: 1397874676}
   m_Layer: 5
-  m_Name: Text
+  m_Name: Grow Animation Distance (percent / frame)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -5919,6 +5931,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   sphere: {fileID: 2104122771}
+  voronoiShader: {fileID: 4800000, guid: e818f8e2defe3484b93570cb8ac5711a, type: 3}
 --- !u!1 &1614635751
 GameObject:
   m_ObjectHideFlags: 0
@@ -6048,7 +6061,7 @@ MonoBehaviour:
   m_MultiSelect: 0
   m_Options:
     m_Options:
-    - m_Text: Euclidean Metric
+    - m_Text: Geodesic Distance
       m_Image: {fileID: 0}
       m_Color: {r: 1, g: 1, b: 1, a: 1}
     - m_Text: Karlsruhe Metric
@@ -6123,7 +6136,7 @@ GameObject:
   - component: {fileID: 1680390746}
   - component: {fileID: 1680390745}
   m_Layer: 5
-  m_Name: Text
+  m_Name: Number of Points
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -7602,13 +7615,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 12673c2722b48c043ba86e2b36c81a67, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  showCoordGrid: 1
-  numOfPoints: 100
-  refPointRadius: 1
-  radius: 0
-  metricType: 1
-  useClosestDistance: 1
+  _metricType: 1
   voronoiShader: {fileID: 4800000, guid: d44107bc6b0809046baa0e9cf5a8b83a, type: 3}
+  mercatorProjection: {fileID: 1609918686}
 --- !u!114 &2104122777
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7635,6 +7644,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1a72cffe57eb297498b58df8ad368ea8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  growVoronoi: 0
+  growSpeed: 0.05
 --- !u!114 &2104122779
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -89,6 +89,44 @@ Shader "Custom/VoronoiOnSphereProjection"
                 return color;
             }
 
+            float GetSphericalDistance(float3 sphericalPointPos, float3 sphericalWorldPos)
+            {
+                float distanceKarlsruhe = 0;
+                float angularDistancePhi = abs( sphericalPointPos.z - sphericalWorldPos.z );            
+
+                // check for angular distance:
+                // if <= 2 calc direct dist, else calc shortest dist over poles
+                if ( angularDistancePhi <= 2)
+                {
+                    // calculate direct distance only moving along longitute half-circles and latitude circles
+                    float minLatCircle = _Radius * min(  sin(sphericalPointPos.z), sin(sphericalWorldPos.z) );
+                    float angularDistanceTheta = abs(min( abs(sphericalPointPos.y - sphericalWorldPos.y), 2 * UNITY_PI - abs(sphericalPointPos.y - sphericalWorldPos.y) ));
+
+                    return minLatCircle * angularDistanceTheta +  _Radius *  angularDistancePhi ;     
+                }
+                else 
+                {
+                    // calculate shortest distance over one of the poles along longitude half-circles
+
+                    float distanceOverNorthPole = sphericalWorldPos.z + sphericalPointPos.z;
+                    float distanceOverSouthPole = abs( UNITY_PI - sphericalWorldPos.z) + abs( UNITY_PI - sphericalPointPos.z);
+
+                    return _Radius * min( distanceOverNorthPole, distanceOverSouthPole );
+                }
+            }
+            
+            float GetGeodesicDistance(float3 sphericalPointPos, float3 sphericalWorldPos)
+            {
+                float phi1 = UNITY_PI / 2 - sphericalWorldPos.z;
+                float phi2 = UNITY_PI / 2 - sphericalPointPos.z;
+
+                float deltaSigma = acos(
+                    sin(phi1) * sin(phi2) +
+                    cos(phi1) * cos(phi2) * cos(sphericalWorldPos.y - sphericalPointPos.y)
+                );
+                return _Radius * deltaSigma;
+            }
+
             float3 FromMercatorProjectionToSpherical(float3 localPos) 
             {
                 // Step 1: Undo Mercator scaling and centering
@@ -140,43 +178,17 @@ Shader "Custom/VoronoiOnSphereProjection"
 
                     // define points
                     float3 sphericalPointPos = _PointSphericalCoords[j].xyz;
-                    float3 euclideanPointPos = SphericalToEuclidean(_PointSphericalCoords[j]);
                     
-                    // euclidean distance 
-                    float distanceEuclid = sqrt( 
-                            pow(euclideanWorldPos.x - euclideanPointPos.x, 2) + 
-                            pow(euclideanWorldPos.y - euclideanPointPos.y, 2) + 
-                            pow(euclideanWorldPos.z - euclideanPointPos.z, 2) 
-                        );
+                    // geodesic distance
+                    float geodesicDistance = GetGeodesicDistance(sphericalPointPos, sphericalWorldPos);
                     
                     // spherical distance
-                    float distanceKarlsruhe = 0;
-                    float angularDistancePhi = abs( sphericalPointPos.z - sphericalWorldPos.z );            
-
-                    // check for angular distance:
-                    // if <= 2 calc direct dist, else calc shortest dist over poles
-                    if ( angularDistancePhi <= 2)
-                    {
-                        // calculate direct distance only moving along longitute half-circles and latitude circles
-                        float minLatCircle = _Radius * min(  sin(sphericalPointPos.z), sin(sphericalWorldPos.z) );
-                        float angularDistanceTheta = abs(min( abs(sphericalPointPos.y - sphericalWorldPos.y), 2 * UNITY_PI - abs(sphericalPointPos.y - sphericalWorldPos.y) ));
-
-                        distanceKarlsruhe = minLatCircle * angularDistanceTheta +  _Radius *  angularDistancePhi ;     
-                    }
-                    else 
-                    {
-                        // calculate shortest distance over one of the poles along longitude half-circles
-
-                        float distanceOverNorthPole = sphericalWorldPos.z + sphericalPointPos.z;
-                        float distanceOverSouthPole = abs( UNITY_PI - sphericalWorldPos.z) + abs( UNITY_PI - sphericalPointPos.z);
-
-                        distanceKarlsruhe = _Radius * min( distanceOverNorthPole, distanceOverSouthPole );
-                    }
+                    float distanceKarlsruhe = GetSphericalDistance(sphericalPointPos, sphericalWorldPos);
 
                     if (_MetricType == 0 || _MetricType == 2) {
-                        if (_ClosestDistance == 1 ? distanceEuclid < refDistEuclid : distanceEuclid > refDistEuclid)
+                        if (_ClosestDistance == 1 ? geodesicDistance < refDistEuclid : geodesicDistance > refDistEuclid)
                         {
-                            refDistEuclid = distanceEuclid;
+                            refDistEuclid = geodesicDistance;
                             finalColorIndexEuclid = j;
                         }
                     } 

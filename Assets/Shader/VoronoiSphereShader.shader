@@ -31,29 +31,29 @@ Shader "Custom/VoronoiOnSphere"
             struct v2f
             {
                 float4 pos : SV_POSITION;
-                float3 localPos : TEXCOORD0; // Using local position instead of world position
+                float3 localPos : TEXCOORD0;
             };
 
             v2f vert(appdata v)
             {
                 v2f o;
                 o.pos = UnityObjectToClipPos(v.vertex);
-                o.localPos = v.vertex.xyz; // Store local position
+                o.localPos = v.vertex.xyz;
                 return o;
             }
 
-            float3 SphericalToEuclidean(float4 spherical)
-            {
-                float radius = spherical.x;
-                float theta = spherical.y;
-                float phi = spherical.z;
+            // float3 SphericalToEuclidean(float4 spherical)
+            // {
+            //     float radius = spherical.x;
+            //     float theta = spherical.y;
+            //     float phi = spherical.z;
 
-                float x = radius * sin(phi) * cos(theta);
-                float y = radius * sin(phi) * sin(theta);
-                float z = radius * cos(phi);
+            //     float x = radius * sin(phi) * cos(theta);
+            //     float y = radius * sin(phi) * sin(theta);
+            //     float z = radius * cos(phi);
 
-                return float3(x, y, z);
-            }
+            //     return float3(x, y, z);
+            // }
         
             float3 EuclideanToSpherical(float3 euclidean)
             {
@@ -97,6 +97,44 @@ Shader "Custom/VoronoiOnSphere"
                 return color;
             }
 
+            float GetSphericalDistance(float3 sphericalPointPos, float3 sphericalWorldPos)
+            {
+                float distanceKarlsruhe = 0;
+                float angularDistancePhi = abs( sphericalPointPos.z - sphericalWorldPos.z );            
+
+                // check for angular distance:
+                // if <= 2 calc direct dist, else calc shortest dist over poles
+                if ( angularDistancePhi <= 2)
+                {
+                    // calculate direct distance only moving along longitute half-circles and latitude circles
+                    float minLatCircle = _Radius * min(  sin(sphericalPointPos.z), sin(sphericalWorldPos.z) );
+                    float angularDistanceTheta = abs(min( abs(sphericalPointPos.y - sphericalWorldPos.y), 2 * UNITY_PI - abs(sphericalPointPos.y - sphericalWorldPos.y) ));
+
+                    return minLatCircle * angularDistanceTheta +  _Radius *  angularDistancePhi ;     
+                }
+                else 
+                {
+                    // calculate shortest distance over one of the poles along longitude half-circles
+
+                    float distanceOverNorthPole = sphericalWorldPos.z + sphericalPointPos.z;
+                    float distanceOverSouthPole = abs( UNITY_PI - sphericalWorldPos.z) + abs( UNITY_PI - sphericalPointPos.z);
+
+                    return _Radius * min( distanceOverNorthPole, distanceOverSouthPole );
+                }
+            }
+            
+            float GetGeodesicDistance(float3 sphericalPointPos, float3 sphericalWorldPos)
+            {
+                float phi1 = UNITY_PI / 2 - sphericalWorldPos.z;
+                float phi2 = UNITY_PI / 2 - sphericalPointPos.z;
+
+                float deltaSigma = acos(
+                    sin(phi1) * sin(phi2) +
+                    cos(phi1) * cos(phi2) * cos(sphericalWorldPos.y - sphericalPointPos.y)
+                );
+                return _Radius * deltaSigma;
+            }
+
             fixed4 frag(v2f i) : SV_Target
             {
                 float3 worldPos = i.localPos;
@@ -114,43 +152,17 @@ Shader "Custom/VoronoiOnSphere"
 
                     // define points
                     float3 sphericalPointPos = _PointSphericalCoords[j].xyz;
-                    float3 euclideanPointPos = SphericalToEuclidean(_PointSphericalCoords[j]);
-                    
-                    // euclidean distance 
-                    float distanceEuclid = sqrt( 
-                            pow(worldPos.x - euclideanPointPos.x, 2) + 
-                            pow(worldPos.y - euclideanPointPos.y,2) + 
-                            pow(worldPos.z - euclideanPointPos.z,2) 
-                        );
+
+                    // geodesic distance
+                    float geodesicDistance = GetGeodesicDistance(sphericalPointPos, sphericalWorldPos);
                     
                     // spherical distance
-                    float distanceKarlsruhe = 0;
-                    float angularDistancePhi = abs( sphericalPointPos.z - sphericalWorldPos.z );            
-
-                    // check for angular distance:
-                    // if <= 2 calc direct dist, else calc shortest dist over poles
-                    if ( angularDistancePhi <= 2)
-                    {
-                        // calculate direct distance only moving along longitute half-circles and latitude circles
-                        float minLatCircle = _Radius * min(  sin(sphericalPointPos.z), sin(sphericalWorldPos.z) );
-                        float angularDistanceTheta = abs(min( abs(sphericalPointPos.y - sphericalWorldPos.y), 2 * UNITY_PI - abs(sphericalPointPos.y - sphericalWorldPos.y) ));
-
-                        distanceKarlsruhe = minLatCircle * angularDistanceTheta +  _Radius *  angularDistancePhi ;     
-                    }
-                    else 
-                    {
-                        // calculate shortest distance over one of the poles along longitude half-circles
-
-                        float distanceOverNorthPole = sphericalWorldPos.z + sphericalPointPos.z;
-                        float distanceOverSouthPole = abs( UNITY_PI - sphericalWorldPos.z) + abs( UNITY_PI - sphericalPointPos.z);
-
-                        distanceKarlsruhe = _Radius * min( distanceOverNorthPole, distanceOverSouthPole );
-                    }
+                    float distanceKarlsruhe = GetSphericalDistance(sphericalPointPos, sphericalWorldPos);
 
                     if (_MetricType == 0 || _MetricType == 2) {
-                        if (_ClosestDistance == 1 ? distanceEuclid < refDistEuclid : distanceEuclid > refDistEuclid)
+                        if (_ClosestDistance == 1 ? geodesicDistance < refDistEuclid : geodesicDistance > refDistEuclid)
                         {
-                            refDistEuclid = distanceEuclid;
+                            refDistEuclid = geodesicDistance;
                             finalColorIndexEuclid = j;
                         }
                     } 
@@ -164,34 +176,30 @@ Shader "Custom/VoronoiOnSphere"
                     } 
                 }
 
-                if (_MetricType == 2) 
+                float4 color = float4(0,0,0,1);
+
+                if (_MetricType == 0) 
                 {
-                    float4 color = finalColorIndexEuclid == finalColorIndexKarlsruhe 
-                        ? _Colors[finalColorIndexEuclid] 
-                        : float4(0, 0, 0, 1);
-                    return applyGrid(sphericalWorldPos, color);
-                }
-                else
-                {
-                    if (_MetricType == 0) 
+                    if (_MaxDistancePercentage == 0 || refDistEuclid <= (UNITY_PI * _Radius) * (_MaxDistancePercentage / 100)) 
                     {
-                        float4 color = _Colors[finalColorIndexEuclid];
-                        if (_MaxDistancePercentage > 0 && refDistEuclid > (_Radius - 0.5  + (_MaxDistancePercentage / 100))) 
-                        {
-                            color = float4(0,0,0,1);
-                        }
-                        return applyGrid(sphericalWorldPos, color);
-                    }
-                    else
-                    {
-                        float4 color = _Colors[finalColorIndexKarlsruhe];
-                        if (_MaxDistancePercentage > 0 && refDistKarlsruhe > (UNITY_PI * _Radius) * (_MaxDistancePercentage / 100)) 
-                        {
-                            color = float4(0,0,0,1);
-                        }
-                        return applyGrid(sphericalWorldPos, color);
+                        color = _Colors[finalColorIndexEuclid];
                     }
                 }
+                else if (_MetricType == 1) 
+                {
+                    if (_MaxDistancePercentage == 0 || refDistKarlsruhe <= (UNITY_PI * _Radius) * (_MaxDistancePercentage / 100)) 
+                    {
+                        color = _Colors[finalColorIndexKarlsruhe];
+                    }
+                }
+                else if (_MetricType == 2) 
+                {
+                    if ((finalColorIndexEuclid == finalColorIndexKarlsruhe) && (_MaxDistancePercentage == 0 || refDistKarlsruhe <= (UNITY_PI * _Radius) * (_MaxDistancePercentage / 100))) 
+                    {
+                        color = _Colors[finalColorIndexKarlsruhe];
+                    }
+                }
+                return applyGrid(sphericalWorldPos, color);
             }
             ENDCG
         }

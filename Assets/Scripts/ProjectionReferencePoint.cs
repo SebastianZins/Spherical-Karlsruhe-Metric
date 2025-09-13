@@ -108,8 +108,8 @@ public class ProjectionReferencePoint : MonoBehaviour
         // Scale to fit plane
         x *= _projectionScale.x * 0.5f;
         x -= _projectionScale.x * 0.25f;
-        // Clamp at north / southpole to avoid exponantially exploding tan behaviour at -90deg / 90deg
-        float epsilon = 0.15f;
+        // Clamp at north / southpole to avoid exponantially exploding tan behaviour at 0pi / pi
+        float epsilon = 0.08f;
         y = Mathf.Clamp(y, -_projectionScale.y * (0.5f - epsilon), _projectionScale.y * (0.5f - epsilon));
 
         Vector3 mercatorPos = new Vector3(x, 0f, y);

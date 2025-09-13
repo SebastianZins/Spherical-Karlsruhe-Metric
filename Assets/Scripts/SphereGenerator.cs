@@ -4,100 +4,118 @@ using UnityEngine;
 
 public class SphereGenerator : MonoBehaviour
 {
-    public bool showCoordGrid = true;
-    public int numOfPoints = 100;
-    public float refPointRadius = 2f;
-    [HideInInspector]
-    public float radius;
+    private bool _showCoordGrid = true;
+    private int _numOfPoints = 100;
+    private float _refPointRadius = 2f;
+    private float _radius;
 
-    public EMetricType metricType = EMetricType.Spherical;
-    public bool useClosestDistance = true;
+    public EMetricType _metricType = EMetricType.Spherical;
+    private bool _useClosestDistance = true;
     private bool _showPoles = true;
 
-    private Material _sphereMaterial;
     public Shader voronoiShader;
+    private Material _sphereMaterial;
+
     public GameObject mercatorProjection;
     private CreateProjection _mercatorProjectionData;
+
+    [HideInInspector]
+    public bool showCoordGrid
+    {
+        get { return _showCoordGrid; }
+        set { SetShowCoordGrid(value); }
+    }
+    [HideInInspector]
+    public int numOfPoints
+    {
+        get { return _numOfPoints; }
+        set { SetPointCount(value); }
+    }
+    [HideInInspector]
+    public float refPointRadius
+    {
+        get { return _refPointRadius; }
+        set { SetPointRadius(value); }
+    }
+
+    [HideInInspector]
+    public EMetricType metricType
+    {
+        get { return _metricType; }
+        set { SetMetricType(value); }
+    }
+    [HideInInspector]
+    public bool useClosestDistance
+    {
+        get { return _useClosestDistance; }
+        set { SetUseClosestDistance(value); }
+    }
+    [HideInInspector]
+    public bool showPoles
+    {
+        get { return _showPoles; }
+        set { SetShowPoles(value); }
+    }
 
 
     void Start()
     {
         _sphereMaterial = GetComponent<Renderer>().material;
-        radius = transform.localScale.x * 0.5f;
+        _radius = transform.localScale.x * 0.5f;
 
         GeneratePoints();
 
         List<ReferencePointHandler> spherePoints = GetReferencePointsHandlers();
         _mercatorProjectionData = mercatorProjection.GetComponent<CreateProjection>();
-        _mercatorProjectionData.InitializeProjection(refPointRadius, radius, spherePoints);
+        _mercatorProjectionData.InitializeProjection(_refPointRadius, _radius, spherePoints);
     }
 
-    public void SetPointCount(string countString)
+    public void SetPointCount(int countString)
     {
-        if (int.TryParse(countString, out int count))
-        {
-            numOfPoints = count;
-            DeleteChildObjects();
-            GeneratePoints();
+        _numOfPoints = countString;
+        DeleteChildObjects();
+        GeneratePoints();
 
-            List<ReferencePointHandler> spherePoints = GetReferencePointsHandlers();
-            _mercatorProjectionData.UpdatePoints(refPointRadius, radius, spherePoints);
-            Debug.Log("Number of points changed: " + count);
-        }
-        else
-        {
-            Debug.LogWarning("Invalid number input: " + countString);
-        }
+        List<ReferencePointHandler> spherePoints = GetReferencePointsHandlers();
+        _mercatorProjectionData.UpdatePoints(_refPointRadius, _radius, spherePoints);
     }
 
-    public void SetPointRadius(string radiusString)
+    public void SetPointRadius(float radiusString)
     {
-        if (float.TryParse(radiusString, out float radius))
-        {
-            refPointRadius = radius;
-            ResizePoints();
+        _refPointRadius = _radius;
+        ResizePoints();
 
-            _mercatorProjectionData.SetPointRadius(radius);
-            Debug.Log("Point radius changed: " + radius);
-        }
-        else
-        {
-            Debug.LogWarning("Invalid number input: " + radiusString);
-        }
+        _mercatorProjectionData.SetPointRadius(_radius);
     }
 
     public void SetUseClosestDistance(bool useClosest)
     {
-        useClosestDistance = useClosest;
+        _useClosestDistance = useClosest;
         SetShaderMetricProperties();
 
         _mercatorProjectionData.SetUseClosestDistance(useClosest);
-        Debug.Log("Use closest distance metric changed: " + useClosest);
     }
 
     public void SetShowCoordGrid(bool showCoordGrid)
     {
-        this.showCoordGrid = showCoordGrid;
+        _showCoordGrid = showCoordGrid;
         SetShaderMetricProperties();
 
         _mercatorProjectionData.SetShowCoordGrid(showCoordGrid);
-        Debug.Log("Show grid flag changed: " + showCoordGrid);
     }
 
-    public void SetMetricType(int metricType)
+    public void SetMetricType(EMetricType metricType)
     {
-        this.metricType = (EMetricType)metricType;
+        _metricType = metricType;
         SetShaderMetricProperties();
 
-        _mercatorProjectionData.SetMetricType(this.metricType);
-        Debug.Log("Metric type changed: " + metricType);
+        _mercatorProjectionData.SetMetricType(_metricType);
     }
 
-    public void SetshowPoles(bool showPoles)
+    public void SetShowPoles(bool showPoles)
     {
         _showPoles = showPoles;
         SwitchPolesVisibility();
-        Debug.Log("Set show poles flag: " + showPoles);
     }
 
     public void UpdateGrowAnimation(float maxDistancePercent)
@@ -123,22 +141,22 @@ public class SphereGenerator : MonoBehaviour
         Renderer renderer = GetComponent<Renderer>();
         Destroy(renderer.material);
 
-        for (int i = 0; i < numOfPoints; i++)
+        for (int i = 0; i < _numOfPoints; i++)
         {
             GameObject pointObject = GameObject.CreatePrimitive(PrimitiveType.Sphere);
             pointObject.transform.parent = transform;
             pointObject.tag = Constants.REFERENCE_POINT_TAG;
             ReferencePointHandler pointHandler = pointObject.AddComponent<ReferencePointHandler>();
-            pointHandler.InitializePoint(radius, refPointRadius);
+            pointHandler.InitializePoint(_radius, _refPointRadius);
 
             pointObject.name = $"Reference Point [{pointHandler.sphericalPosition.x}, {pointHandler.sphericalPosition.y}]";
         }
 
-        if (numOfPoints > 0)
+        if (_numOfPoints > 0)
         {
             _sphereMaterial = new Material(voronoiShader);
-            _sphereMaterial.SetInt("_PointCount", numOfPoints);
-            _sphereMaterial.SetFloat("_Radius", radius);
+            _sphereMaterial.SetInt("_PointCount", _numOfPoints);
+            _sphereMaterial.SetFloat("_Radius", _radius);
             SetPointPositionShaderData();
             SetPointColorShaderData();
             SetShaderMetricProperties();
@@ -172,7 +190,7 @@ public class SphereGenerator : MonoBehaviour
     {
         foreach (Transform point in GetReferencePoints())
         {
-            point.GetComponent<ReferencePointHandler>().SetPointRadius(refPointRadius);
+            point.GetComponent<ReferencePointHandler>().SetPointRadius(_refPointRadius);
         }
     }
 
@@ -216,9 +234,9 @@ public class SphereGenerator : MonoBehaviour
 
     private void SetShaderMetricProperties()
     {
-        _sphereMaterial.SetFloat("_ClosestDistance", useClosestDistance ? 1f : 0f);
-        _sphereMaterial.SetFloat("_MetricType", (float)metricType);
-        _sphereMaterial.SetFloat("_ShowGrid", showCoordGrid ? 1f : 0f);
+        _sphereMaterial.SetFloat("_ClosestDistance", _useClosestDistance ? 1f : 0f);
+        _sphereMaterial.SetFloat("_MetricType", (float)_metricType);
+        _sphereMaterial.SetFloat("_ShowGrid", _showCoordGrid ? 1f : 0f);
         UpdateGrowAnimation(0f);
     }
 
