@@ -80,12 +80,12 @@ public class SphereGenerator : MonoBehaviour
         _mercatorProjectionData.UpdatePoints(_refPointRadius, _radius, spherePoints);
     }
 
-    public void SetPointRadius(float radiusString)
+    public void SetPointRadius(float radius)
     {
-        _refPointRadius = _radius;
+        _refPointRadius = radius;
         ResizePoints();
 
-        _mercatorProjectionData.SetPointRadius(_radius);
+        _mercatorProjectionData.SetPointRadius(radius);
     }
 
     public void SetUseClosestDistance(bool useClosest)

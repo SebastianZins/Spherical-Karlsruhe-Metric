@@ -95,7 +95,7 @@ public class ProjectionReferencePoint : MonoBehaviour
     {
         transform.localScale = new Vector3(
             pointRadius / _projectionScale.x,
-            0.01f,
+            0.1f,
             pointRadius / _projectionScale.y
         );
     }
