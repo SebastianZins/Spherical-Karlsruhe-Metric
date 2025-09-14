@@ -5821,6 +5821,7 @@ GameObject:
   - component: {fileID: 1609918688}
   - component: {fileID: 1609918687}
   - component: {fileID: 1609918691}
+  - component: {fileID: 1609918692}
   m_Layer: 0
   m_Name: SphereProjection
   m_TagString: Untagged
@@ -5932,6 +5933,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   sphere: {fileID: 2104122771}
   voronoiShader: {fileID: 4800000, guid: e818f8e2defe3484b93570cb8ac5711a, type: 3}
+--- !u!114 &1609918692
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1609918686}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b2958ea7db4332a49812ec50c073bc82, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  cam: {fileID: 859889611}
 --- !u!1 &1614635751
 GameObject:
   m_ObjectHideFlags: 0
@@ -7670,6 +7684,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b2958ea7db4332a49812ec50c073bc82, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  cam: {fileID: 963194227}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

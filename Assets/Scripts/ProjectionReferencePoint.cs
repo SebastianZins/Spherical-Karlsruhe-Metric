@@ -1,4 +1,5 @@
-using UnityEngine;
+﻿using UnityEngine;
+using UnityEngine.UIElements;
 
 public class ProjectionReferencePoint : MonoBehaviour
 {
@@ -10,10 +11,12 @@ public class ProjectionReferencePoint : MonoBehaviour
     private GameObject _innerCircle;
     private Material _innerCircleMaterial;
     private ReferencePointHandler _ogPoint;
+    public SphereGenerator _sphereGenerator;
 
-    public void InitializePoint(ReferencePointHandler spherePoint, Transform parent, Vector2 projectionScale)
+    public void InitializePoint(ReferencePointHandler spherePoint, Transform parent, Vector2 projectionScale, SphereGenerator sphereGenerator)
     {
         _ogPoint = spherePoint;
+        _sphereGenerator = sphereGenerator;
 
         GetComponent<Renderer>().material = new Material(Shader.Find("Unlit/Color"));
         GetComponent<Renderer>().material.color = Color.black;
@@ -43,16 +46,25 @@ public class ProjectionReferencePoint : MonoBehaviour
         transform.name = $"Reference Point [{_sphericalPosition.x}, {_sphericalPosition.y}]";
     }
 
-    //public void SetEuclideanPosition(Vector3 position)
-    //{
-    //    _euclideanPosition = position;
-    //    _sphericalPosition = ConvertToSpherical(_euclideanPosition);
-    //}
+    public void SetEuclideanPosition(Vector3 position)
+    {
+        _euclideanPosition = (position);
+        _sphericalPosition = FromMercatorProjection(_euclideanPosition);
+    }
 
     public void UpdatePosition()
     {
         Vector2 sphericalPosition = _ogPoint.sphericalPosition;
         SetSphericalPosition(sphericalPosition);
+    }
+
+    public void DragPointPosition(Vector3 pos)
+    {
+        transform.position = pos;
+        _euclideanPosition = transform.localPosition;
+        _sphericalPosition = FromMercatorProjection(_euclideanPosition);
+        _ogPoint.SetSphericalPosition(_ogPoint.radius, _sphericalPosition);
+        _sphereGenerator.UpdatePointPositionSpherical();
     }
 
     public Vector4 GetSphericalPosition4()
@@ -88,14 +100,23 @@ public class ProjectionReferencePoint : MonoBehaviour
         );
     }
 
-    //private static Vector2 ConvertToSpherical(Vector3 euclidPos)
-    //{
-    //    float r = euclidPos.magnitude;
-    //    float theta = Mathf.Atan2(euclidPos.z, euclidPos.x);
-    //    float phi = Mathf.Acos(euclidPos.y / r);
+    private Vector2 FromMercatorProjection(Vector3 mercatorPos)
+    {
+        float x = mercatorPos.x;
+        float y = mercatorPos.z; // Assuming Z is north-south, matching your forward function
 
-    //    return new Vector2(theta, phi);
-    //}
+        // Undo X scaling and offset
+        float theta = (x + _projectionScale.x * 0.25f) / (_projectionScale.x * 0.5f);
+        theta *= 2f * Mathf.PI;
+
+        // Undo Y scaling and inverse Mercator projection
+        float unscaledY = Mathf.Clamp(y, -_projectionScale.y * 0.42f, _projectionScale.y * 0.42f); // same epsilon as forward
+        float latitude = 2f * Mathf.Atan(Mathf.Exp(unscaledY)) - Mathf.PI / 2f;
+
+        float phi = Mathf.PI / 2f - latitude;
+
+        return new Vector2(theta, phi); // (theta, phi)
+    }
 
     private Vector3 ToMercatorProjection(Vector2 sphercialPos)
     {

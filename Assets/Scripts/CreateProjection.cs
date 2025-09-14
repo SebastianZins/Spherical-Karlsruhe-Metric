@@ -130,9 +130,10 @@ public class CreateProjection : MonoBehaviour
         foreach (var spherePoint in spherePoints)
         {
             GameObject pointObject = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            SphereGenerator sphereGenerator = sphere.GetComponent<SphereGenerator>();
             pointObject
                 .AddComponent<ProjectionReferencePoint>()
-                .InitializePoint(spherePoint, transform, projectionScale);
+                .InitializePoint(spherePoint, transform, projectionScale, sphereGenerator);
         }
 
         if (spherePoints.Count > 0)
@@ -191,7 +192,7 @@ public class CreateProjection : MonoBehaviour
         return spherePoints;
     }
 
-    private void SetPointPositionShaderData()
+    public void SetPointPositionShaderData()
     {
         List<ProjectionReferencePoint> pointHandlers = GetReferencePoints()
             .Select((point) => point.GetComponent<ProjectionReferencePoint>())

@@ -1,15 +1,11 @@
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class PointDragger : MonoBehaviour
 {
-    private Camera cam;
+    public Camera cam;
     private bool isDragging = false;
     private Transform selectedChild;
-
-    void Start()
-    {
-        cam = Camera.main;
-    }
 
     void Update()
     {
@@ -42,9 +38,30 @@ public class PointDragger : MonoBehaviour
             Ray ray = cam.ScreenPointToRay(Input.mousePosition);
             if (Physics.Raycast(ray, out RaycastHit hit))
             {
-                Vector3 direction = (hit.point - transform.position).normalized;
-                float radius = transform.localScale.x * 0.5f;
-                selectedChild.GetComponent<ReferencePointHandler>().SetEuclideanPosition(transform.position + direction * radius);
+
+                ReferencePointHandler spherePoint = selectedChild.GetComponent<ReferencePointHandler>();
+                if (spherePoint != null)
+                {
+                    Vector3 direction = (hit.point - transform.position).normalized;
+                    float radius = transform.localScale.x * 0.5f;
+                    spherePoint.SetEuclideanPosition(transform.position + direction * radius);
+                }
+
+                ProjectionReferencePoint projectionPoint = selectedChild.GetComponent<ProjectionReferencePoint>();
+                if (projectionPoint != null)
+                {
+                    Vector3 localHitPoint = transform.InverseTransformPoint(hit.point);
+
+                    float halfWidth = transform.localScale.x * 0.5f;
+                    float halfHeight = transform.localScale.z * 0.5f;
+                    localHitPoint.x = Mathf.Clamp(localHitPoint.x, -halfWidth, halfWidth);
+                    localHitPoint.z = Mathf.Clamp(localHitPoint.z, -halfHeight, halfHeight);
+                    localHitPoint.y = 1f;
+
+                    Vector3 clampedWorldPoint = transform.TransformPoint(localHitPoint);
+
+                    projectionPoint.DragPointPosition(clampedWorldPoint);
+                }
             }
         }
     }

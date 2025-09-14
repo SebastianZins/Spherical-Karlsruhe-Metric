@@ -202,7 +202,7 @@ public class SphereGenerator : MonoBehaviour
         }
     }
 
-    private void SetPointPositionShaderData()
+    public void SetPointPositionShaderData()
     {
         List<ReferencePointHandler> pointHandlers = GetReferencePoints()
             .Select((point) => point.GetComponent<ReferencePointHandler>())
