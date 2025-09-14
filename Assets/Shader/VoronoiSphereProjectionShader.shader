@@ -202,34 +202,30 @@ Shader "Custom/VoronoiOnSphereProjection"
                     } 
                 }
 
-                if (_MetricType == 2) 
+                float4 color = float4(0,0,0,1);
+
+                if (_MetricType == 0) 
                 {
-                    float4 color = finalColorIndexEuclid == finalColorIndexKarlsruhe 
-                        ? _Colors[finalColorIndexEuclid] 
-                        : float4(0, 0, 0, 1);
-                    return applyGrid(sphericalWorldPos, color);
-                }
-                else
-                {
-                    if (_MetricType == 0) 
+                    if (_MaxDistancePercentage == 0 || refDistEuclid <= (UNITY_PI * _Radius) * (_MaxDistancePercentage / 100)) 
                     {
-                        float4 color = _Colors[finalColorIndexEuclid];
-                        if (_MaxDistancePercentage > 0 && refDistEuclid > (_Radius - 0.5  + (_MaxDistancePercentage / 100))) 
-                        {
-                            color = float4(0,0,0,1);
-                        }
-                        return applyGrid(sphericalWorldPos, color);
-                    }
-                    else
-                    {
-                        float4 color = _Colors[finalColorIndexKarlsruhe];
-                        if (_MaxDistancePercentage > 0 && refDistKarlsruhe > (UNITY_PI * _Radius) * (_MaxDistancePercentage / 100)) 
-                        {
-                            color = float4(0,0,0,1);
-                        }
-                        return applyGrid(sphericalWorldPos, color);
+                        color = _Colors[finalColorIndexEuclid];
                     }
                 }
+                else if (_MetricType == 1) 
+                {
+                    if (_MaxDistancePercentage == 0 || refDistKarlsruhe <= (UNITY_PI * _Radius) * (_MaxDistancePercentage / 100)) 
+                    {
+                        color = _Colors[finalColorIndexKarlsruhe];
+                    }
+                }
+                else if (_MetricType == 2) 
+                {
+                    if ((finalColorIndexEuclid == finalColorIndexKarlsruhe) && (_MaxDistancePercentage == 0 || refDistKarlsruhe <= (UNITY_PI * _Radius) * (_MaxDistancePercentage / 100))) 
+                    {
+                        color = _Colors[finalColorIndexKarlsruhe];
+                    }
+                }
+                return applyGrid(sphericalWorldPos, color);
             }
             ENDCG
         }

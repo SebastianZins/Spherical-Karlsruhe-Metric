@@ -7660,6 +7660,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   growVoronoi: 0
   growSpeed: 0.05
+  projection: {fileID: 1609918686}
 --- !u!114 &2104122779
 MonoBehaviour:
   m_ObjectHideFlags: 0

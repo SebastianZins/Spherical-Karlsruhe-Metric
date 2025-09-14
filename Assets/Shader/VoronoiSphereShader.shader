@@ -41,19 +41,6 @@ Shader "Custom/VoronoiOnSphere"
                 o.localPos = v.vertex.xyz;
                 return o;
             }
-
-            // float3 SphericalToEuclidean(float4 spherical)
-            // {
-            //     float radius = spherical.x;
-            //     float theta = spherical.y;
-            //     float phi = spherical.z;
-
-            //     float x = radius * sin(phi) * cos(theta);
-            //     float y = radius * sin(phi) * sin(theta);
-            //     float z = radius * cos(phi);
-
-            //     return float3(x, y, z);
-            // }
         
             float3 EuclideanToSpherical(float3 euclidean)
             {

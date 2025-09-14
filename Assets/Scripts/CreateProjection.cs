@@ -1,9 +1,5 @@
-using NUnit.Framework;
-using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class CreateProjection : MonoBehaviour
@@ -55,6 +51,11 @@ public class CreateProjection : MonoBehaviour
     {
         _metricType = metricType;
         SetShaderMetricProperties();
+    }
+
+    public void UpdateGrowAnimation(float maxDistancePercent)
+    {
+        _projectionMaterial.SetFloat("_MaxDistancePercentage", maxDistancePercent);
     }
 
     // Update is called once per frame
@@ -227,5 +228,6 @@ public class CreateProjection : MonoBehaviour
         _projectionMaterial.SetFloat("_ClosestDistance", _useClosestDistance ? 1f : 0f);
         _projectionMaterial.SetFloat("_MetricType", (float)_metricType);
         _projectionMaterial.SetFloat("_ShowGrid", _showCoordGrid ? 1f : 0f);
+        UpdateGrowAnimation(0f);
     }
 }
