@@ -7,12 +7,12 @@ public class GrowVoronoi : MonoBehaviour
     private float _growPercentage = 0f;
     private bool _growDirBigger = true;
 
-    public GameObject projection;
-    private CreateProjection _projectionData;
+    public GameObject mercatorProjection;
+    private CreateMercatorProjection _mercatorProjectionData;
 
     private void Start()
     {
-        _projectionData = projection.GetComponent<CreateProjection>();
+        _mercatorProjectionData = mercatorProjection.GetComponent<CreateMercatorProjection>();
     }
 
     void Update()
@@ -38,7 +38,7 @@ public class GrowVoronoi : MonoBehaviour
                 }
             }
             transform.GetComponent<SphereGenerator>().UpdateGrowAnimation(_growPercentage);
-            _projectionData.UpdateGrowAnimation(_growPercentage);
+            _mercatorProjectionData.UpdateGrowAnimation(_growPercentage);
         }
     }
 
@@ -49,7 +49,7 @@ public class GrowVoronoi : MonoBehaviour
         if (!growVoronoiChanged)
         {
             transform.GetComponent<SphereGenerator>().UpdateGrowAnimation(_growPercentage);
-            _projectionData.UpdateGrowAnimation(_growPercentage);
+            _mercatorProjectionData.UpdateGrowAnimation(_growPercentage);
         }
     }
 }

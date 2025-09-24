@@ -17,7 +17,12 @@ public class SphereGenerator : MonoBehaviour
     private Material _sphereMaterial;
 
     public GameObject mercatorProjection;
-    private CreateProjection _mercatorProjectionData;
+    private CreateMercatorProjection _mercatorProjectionData;
+
+    public GameObject azimuthalProjectionNp;
+    private CreateAzimuthalProjection _azimuthalProjectionNpData;
+    public GameObject azimuthalProjectionSp;
+    private CreateAzimuthalProjection _azimuthalProjectionSpData;
 
     [HideInInspector]
     public bool showCoordGrid
@@ -66,8 +71,15 @@ public class SphereGenerator : MonoBehaviour
         GeneratePoints();
 
         List<ReferencePointHandler> spherePoints = GetReferencePointsHandlers();
-        _mercatorProjectionData = mercatorProjection.GetComponent<CreateProjection>();
+
+        _mercatorProjectionData = mercatorProjection.GetComponent<CreateMercatorProjection>();
         _mercatorProjectionData.InitializeProjection(_refPointRadius, _radius, spherePoints);
+
+        _azimuthalProjectionNpData = azimuthalProjectionNp.GetComponent<CreateAzimuthalProjection>();
+        _azimuthalProjectionNpData.InitializeProjection(_refPointRadius, _radius, spherePoints);
+
+        _azimuthalProjectionSpData = azimuthalProjectionSp.GetComponent<CreateAzimuthalProjection>();
+        _azimuthalProjectionSpData.InitializeProjection(_refPointRadius, _radius, spherePoints);
     }
 
     public void SetPointCount(int countString)
@@ -78,6 +90,8 @@ public class SphereGenerator : MonoBehaviour
 
         List<ReferencePointHandler> spherePoints = GetReferencePointsHandlers();
         _mercatorProjectionData.UpdatePoints(_refPointRadius, _radius, spherePoints);
+        _azimuthalProjectionNpData.UpdatePoints(_refPointRadius, _radius, spherePoints);
+        _azimuthalProjectionSpData.UpdatePoints(_refPointRadius, _radius, spherePoints);
     }
 
     public void SetPointRadius(float radius)
@@ -86,6 +100,8 @@ public class SphereGenerator : MonoBehaviour
         ResizePoints();
 
         _mercatorProjectionData.SetPointRadius(radius);
+        _azimuthalProjectionNpData.SetPointRadius(radius);
+        _azimuthalProjectionSpData.SetPointRadius(radius);
     }
 
     public void SetUseClosestDistance(bool useClosest)
@@ -94,6 +110,8 @@ public class SphereGenerator : MonoBehaviour
         SetShaderMetricProperties();
 
         _mercatorProjectionData.SetUseClosestDistance(useClosest);
+        _azimuthalProjectionNpData.SetUseClosestDistance(useClosest);
+        _azimuthalProjectionSpData.SetUseClosestDistance(useClosest);
     }
 
     public void SetShowCoordGrid(bool showCoordGrid)
@@ -102,6 +120,8 @@ public class SphereGenerator : MonoBehaviour
         SetShaderMetricProperties();
 
         _mercatorProjectionData.SetShowCoordGrid(showCoordGrid);
+        _azimuthalProjectionNpData.SetShowCoordGrid(showCoordGrid);
+        _azimuthalProjectionSpData.SetShowCoordGrid(showCoordGrid);
     }
 
     public void SetMetricType(EMetricType metricType)
@@ -110,6 +130,8 @@ public class SphereGenerator : MonoBehaviour
         SetShaderMetricProperties();
 
         _mercatorProjectionData.SetMetricType(_metricType);
+        _azimuthalProjectionNpData.SetMetricType(_metricType);
+        _azimuthalProjectionSpData.SetMetricType(_metricType);
     }
 
     public void SetShowPoles(bool showPoles)
@@ -129,6 +151,8 @@ public class SphereGenerator : MonoBehaviour
 
         List<ReferencePointHandler> spherePoints = GetReferencePointsHandlers();
         _mercatorProjectionData.UpdatePointPositions();
+        _azimuthalProjectionNpData.UpdatePointPositions();
+        _azimuthalProjectionSpData.UpdatePointPositions();
     }
 
     public void UpdatePointColor()

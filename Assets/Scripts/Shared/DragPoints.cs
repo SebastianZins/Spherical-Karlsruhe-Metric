@@ -1,4 +1,3 @@
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class PointDragger : MonoBehaviour
@@ -47,8 +46,8 @@ public class PointDragger : MonoBehaviour
                     spherePoint.SetEuclideanPosition(transform.position + direction * radius);
                 }
 
-                ProjectionReferencePoint projectionPoint = selectedChild.GetComponent<ProjectionReferencePoint>();
-                if (projectionPoint != null)
+                AzimuthalReferencePoint mercatorProjectionPoint = selectedChild.GetComponent<AzimuthalReferencePoint>();
+                if (mercatorProjectionPoint != null)
                 {
                     Vector3 localHitPoint = transform.InverseTransformPoint(hit.point);
 
@@ -60,7 +59,7 @@ public class PointDragger : MonoBehaviour
 
                     Vector3 clampedWorldPoint = transform.TransformPoint(localHitPoint);
 
-                    projectionPoint.DragPointPosition(clampedWorldPoint);
+                    mercatorProjectionPoint.DragPointPosition(clampedWorldPoint);
                 }
             }
         }

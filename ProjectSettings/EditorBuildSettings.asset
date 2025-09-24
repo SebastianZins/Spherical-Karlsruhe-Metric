@@ -4,5 +4,9 @@
 EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
-  m_Scenes: []
+  m_Scenes:
+  - enabled: 1
+    path: Assets/Material/SphereMaterial.unity
+    guid: 7b1d10152238bfc429110e817c8645ca
   m_configObjects: {}
+  m_UseUCBPForAssetBundles: 0

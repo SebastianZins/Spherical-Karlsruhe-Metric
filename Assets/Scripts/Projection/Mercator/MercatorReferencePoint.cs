@@ -1,7 +1,6 @@
 ﻿using UnityEngine;
-using UnityEngine.UIElements;
 
-public class ProjectionReferencePoint : MonoBehaviour
+public class MercatorReferencePoint : MonoBehaviour
 {
     private Vector3 _euclideanPosition;
     private Vector2 _sphericalPosition;
@@ -41,7 +40,7 @@ public class ProjectionReferencePoint : MonoBehaviour
         _sphereRadius = spherePoint.radius;
 
         SetPointRadius(spherePoint.pointRadius);
-        SetSphericalPosition(spherePoint.sphericalPosition);
+        UpdatePosition();
 
         transform.name = $"Reference Point [{_sphericalPosition.x}, {_sphericalPosition.y}]";
     }
@@ -146,12 +145,5 @@ public class ProjectionReferencePoint : MonoBehaviour
 
         transform.position = newPoint;
         transform.rotation = rotation;
-    }
-
-    private void UpdateShader()
-    {
-        //_material.SetColor("_Color", _color);
-        //_material.SetColor("_OutlineColor", Color.black); 
-        //_material.SetFloat("_OutlineWidth", 0.05f);
     }
 }

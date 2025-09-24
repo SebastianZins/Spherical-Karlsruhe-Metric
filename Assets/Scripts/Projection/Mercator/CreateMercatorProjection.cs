@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-public class CreateProjection : MonoBehaviour
+public class CreateMercatorProjection : MonoBehaviour
 {
     [Header("Projection Settings")]
     public GameObject sphere;
@@ -18,16 +18,6 @@ public class CreateProjection : MonoBehaviour
     void Start()
     {
         _projectionMaterial = GetComponent<Renderer>().material;
-    }
-
-    public void UpdatePointPosition()
-    {
-
-    }
-
-    public void UpdatePointColor()
-    {
-
     }
 
     public void SetPointRadius(float radius)
@@ -56,49 +46,6 @@ public class CreateProjection : MonoBehaviour
     public void UpdateGrowAnimation(float maxDistancePercent)
     {
         _projectionMaterial.SetFloat("_MaxDistancePercentage", maxDistancePercent);
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        //int pointCount = sphere.GetComponent<SphereGenerator>().numOfPoints;
-        //if (_pointCount != pointCount)
-        //{
-        //    _pointCount = pointCount;
-        //    DeleteChildObjects();
-        //    //GeneratePoints();
-        //}
-
-        //float refPointRadius = sphere.GetComponent<SphereGenerator>().refPointRadius;
-        //if (_refPointRadius != refPointRadius)
-        //{
-        //    _refPointRadius = refPointRadius;
-        //    ResizePoints();
-        //}
-
-        //float scaleWidth = transform.lossyScale.x;
-        //float scaleHeight = transform.lossyScale.z;
-        //if (scaleWidth != _scaleWidth || scaleHeight != _scaleHeight)
-        //{
-        //    _scaleHeight = scaleHeight;
-        //    _scaleWidth = scaleWidth;
-        //    RepositionPoints();
-        //}
-
-        //EMetricType metricType = sphere.GetComponent<SphereGenerator>().metricType;
-        //bool useClosestDistance = sphere.GetComponent<SphereGenerator>().useClosestDistance;
-        //bool showCoordGrid = sphere.GetComponent<SphereGenerator>().showCoordGrid;
-
-        //if (
-        //    useClosestDistance != _useClosestDistance ||
-        //    metricType != _metricType ||
-        //    showCoordGrid != _showCoordGrid)
-        //{
-        //    _useClosestDistance = useClosestDistance;
-        //    _metricType = metricType;
-        //    _showCoordGrid = showCoordGrid;
-        //    SetShaderMetricProperties();
-        //}
     }
 
     public void InitializeProjection(float refPointRadius, float radius, List<ReferencePointHandler> spherePoints)
@@ -133,7 +80,7 @@ public class CreateProjection : MonoBehaviour
             GameObject pointObject = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
             SphereGenerator sphereGenerator = sphere.GetComponent<SphereGenerator>();
             pointObject
-                .AddComponent<ProjectionReferencePoint>()
+                .AddComponent<MercatorReferencePoint>()
                 .InitializePoint(spherePoint, transform, projectionScale, sphereGenerator);
         }
 
@@ -158,16 +105,11 @@ public class CreateProjection : MonoBehaviour
         }
     }
 
-    //void RepositionPoints()
-    //{
-    //    projectionMaterial.SetVector("_Scale", new Vector2(_scaleWidth, _scaleHeight));
-    //}
-
     public void ResizePoints(float refPointRadius)
     {
         foreach (Transform point in GetReferencePoints())
         {
-            point.GetComponent<ProjectionReferencePoint>().SetPointRadius(refPointRadius);
+            point.GetComponent<MercatorReferencePoint>().SetPointRadius(refPointRadius);
         }
     }
 
@@ -185,18 +127,18 @@ public class CreateProjection : MonoBehaviour
         return points;
     }
 
-    public List<ProjectionReferencePoint> GetReferencePointsHandlers()
+    public List<MercatorReferencePoint> GetReferencePointsHandlers()
     {
-        List<ProjectionReferencePoint> spherePoints = GetReferencePoints()
-            .Select(point => point.GetComponent<ProjectionReferencePoint>())
+        List<MercatorReferencePoint> spherePoints = GetReferencePoints()
+            .Select(point => point.GetComponent<MercatorReferencePoint>())
             .ToList();
         return spherePoints;
     }
 
     public void SetPointPositionShaderData()
     {
-        List<ProjectionReferencePoint> pointHandlers = GetReferencePoints()
-            .Select((point) => point.GetComponent<ProjectionReferencePoint>())
+        List<MercatorReferencePoint> pointHandlers = GetReferencePoints()
+            .Select((point) => point.GetComponent<MercatorReferencePoint>())
             .ToList();
         ComputeBuffer sphericalCoordsBuffer = new ComputeBuffer(pointHandlers.Count, sizeof(float) * 4);
         sphericalCoordsBuffer
@@ -210,8 +152,8 @@ public class CreateProjection : MonoBehaviour
 
     private void SetPointColorShaderData()
     {
-        List<ProjectionReferencePoint> pointHandlers = GetReferencePoints()
-            .Select((point) => point.GetComponent<ProjectionReferencePoint>())
+        List<MercatorReferencePoint> pointHandlers = GetReferencePoints()
+            .Select((point) => point.GetComponent<MercatorReferencePoint>())
             .ToList();
         ComputeBuffer colorsBuffer = new ComputeBuffer(pointHandlers.Count, sizeof(float) * 4);
         colorsBuffer

@@ -1,4 +1,4 @@
-Shader "Custom/VoronoiOnSphereProjection"
+Shader "Custom/VoronoiSphereAzimuthalProjectionShader"
 {
     SubShader
     {
@@ -21,6 +21,7 @@ Shader "Custom/VoronoiOnSphereProjection"
             uniform float _MetricType;
             uniform float2 _Scale;
             uniform float _ShowGrid;
+            uniform float _IsNorthCenter;
             uniform float _MaxDistancePercentage = 100;
 
             struct appdata
@@ -41,19 +42,6 @@ Shader "Custom/VoronoiOnSphereProjection"
                 o.pos = UnityObjectToClipPos(v.vertex);
                 o.localPos = v.vertex.xyz;
                 return o;
-            }
-
-            float3 SphericalToEuclidean(float3 spherical)
-            {
-                float radius = spherical.x;
-                float theta = spherical.y;
-                float phi = spherical.z;
-
-                float x = radius * sin(phi) * cos(theta);
-                float y = radius * sin(phi) * sin(theta);
-                float z = radius * cos(phi);
-
-                return float3(x, y, z);
             }
 
             float4 applyGrid(float3 sphericalWorldPos, float4 color) 
@@ -127,16 +115,23 @@ Shader "Custom/VoronoiOnSphereProjection"
                 return _Radius * deltaSigma;
             }
 
-            float3 FromMercatorProjectionToSpherical(float3 localPos) 
+            float3 FromAzimuthalProjectionToSpherical(float3 localPos)
             {
-                // Step 1: Undo Mercator scaling and centering
-                float x = (localPos.x + (_Scale.x * 0.25)) / (_Scale.x * 0.5);
-                float theta = x * (2.0 * UNITY_PI); // Longitude
+                float x = localPos.x * 2;
+                float z = localPos.z * 2;
 
-                // Step 2: Undo Mercator projection for latitude
-                float y = localPos.z;
-                float latitude = 2.0 * atan(exp(y)) - UNITY_PI * 0.5;
-                float phi = UNITY_PI * 0.5 - latitude; // Polar angle
+                float rProj = sqrt(x * x + z * z);
+                float theta = atan2(z, x);
+                float phi = UNITY_PI - asin(rProj);
+
+                if (!_IsNorthCenter) 
+                {
+                    theta = 2 * UNITY_PI - theta;
+                }
+                else 
+                {
+                    phi = UNITY_PI - phi;
+                }
 
                 return float3(_Radius, theta, phi);
             }
@@ -145,8 +140,7 @@ Shader "Custom/VoronoiOnSphereProjection"
             {
                 float3 worldPos = i.localPos;
 
-                float3 sphericalWorldPos = FromMercatorProjectionToSpherical(worldPos);
-                float3 euclideanWorldPos = SphericalToEuclidean(sphericalWorldPos);
+                float3 sphericalWorldPos = FromAzimuthalProjectionToSpherical(worldPos);
 
                 // Initialize minimum distance
                 float refDistEuclid = _ClosestDistance == 1 ? 1e20 : -1e20;
@@ -157,17 +151,17 @@ Shader "Custom/VoronoiOnSphereProjection"
                 
                 if (_ShowGrid == 1) {
                     if (
-                        (round(degrees(sphericalWorldPos.y) * 2) / 2) % 90 == 0 ||
-                        (round(degrees(sphericalWorldPos.y) * 4) / 4) % 30 == 0 ||
-                        (round(degrees(sphericalWorldPos.y) * 6) / 6) % 10 == 0
+                        (round(degrees(sphericalWorldPos.y) * 1) / 1) % 90 == 0 ||
+                        (round(degrees(sphericalWorldPos.y) * 3) / 3) % 30 == 0 ||
+                        (round(degrees(sphericalWorldPos.y) * 4) / 4) % 10 == 0
                     ) {
                         return float4(0,0,0,1);
                     }
 
                     if (
-                        (round(degrees(sphericalWorldPos.z) * 2) / 2) % 90 == 0 ||
-                        (round(degrees(sphericalWorldPos.z) * 4) / 4) % 30 == 0 ||
-                        (round(degrees(sphericalWorldPos.z) * 6) / 6) % 10 == 0
+                        (round(degrees(sphericalWorldPos.z) * 1) / 1) % 90 == 0 ||
+                        (round(degrees(sphericalWorldPos.z) * 3) / 3) % 30 == 0 ||
+                        (round(degrees(sphericalWorldPos.z) * 4) / 4) % 10 == 0
                     ) {
                         return float4(0,0,0,1);
                     }
