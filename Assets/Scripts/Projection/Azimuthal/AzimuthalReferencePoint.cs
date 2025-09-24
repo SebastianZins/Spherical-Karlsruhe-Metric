@@ -109,10 +109,12 @@ public class AzimuthalReferencePoint : MonoBehaviour
         if (!_isNorthCenter)
         {
             theta = 2f * Mathf.PI - theta;
+            SwitchVisibility(phi > Mathf.PI / 2);
         }
         else
         {
             phi = Mathf.PI - phi;
+            SwitchVisibility(phi <= Mathf.PI / 2);
         }
 
         return new Vector2(theta, phi);
@@ -133,7 +135,6 @@ public class AzimuthalReferencePoint : MonoBehaviour
             SwitchVisibility(phi <= Mathf.PI / 2);
         }
 
-        // Project onto X-Z plane
         float x = Mathf.Sin(phi) * Mathf.Cos(theta) * 0.5f;
         float z = Mathf.Sin(phi) * Mathf.Sin(theta) * 0.5f;
 
