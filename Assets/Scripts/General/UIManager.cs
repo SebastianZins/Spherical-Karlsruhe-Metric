@@ -36,6 +36,11 @@ public class UIManager : MonoBehaviour
         AddListeners();
     }
 
+	public void Quit()
+	{
+		Application.Quit();
+	}
+
 	private void Initialize()
 	{
 		showPolesInput.isOn = _sphereGenerator.showPoles;
