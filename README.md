@@ -52,7 +52,8 @@ This project explores the extension of the Karlsruhe metric to spherical geometr
 1. Download the realease and extract it.
 2. Run the .exe file and explore the visualization.
 
-1. Alternatively, clone the repository:
+Alternatively:
+1. Clone the repository:
 ```bash
 https://github.com/SebastianZins/Spherical-Karlsruhe-Metric
 ```
