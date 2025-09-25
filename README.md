@@ -32,13 +32,20 @@ This project explores the extension of the Karlsruhe metric to spherical geometr
 
 ## 📷 Screenshots
 ### Sphere divided by Karlsruhe Metric Voronoi diagram
+
 <img width="1168" height="1133" alt="Karlsruhe-nearest-many" src="https://github.com/user-attachments/assets/1232cd3a-305f-4f31-b9fb-985ae189242f" />
+
 ### Sphere divided by Geodesic Metric Voronoi diagram
+
 <img width="1140" height="1158" alt="Geodesic-nearest-many" src="https://github.com/user-attachments/assets/ba689b0a-8844-4bd1-b8d0-d35833d9c0e3" />
-### Mercator sphere prjection divided by Karlsruhe Metric Voronoi diagram
-<img width="1281" height="1223" alt="KarlsruheMetric-topDown" src="https://github.com/user-attachments/assets/19a12c23-4d84-44c7-82d9-c86f5059e618" />
+
 ### Azimuthal sphere prjection divided by Geodesic Metric Voronoi diagram
-<img width="1577" height="886" alt="Geodesic-furthest-many-mercator" src="https://github.com/user-attachments/assets/14319b00-0019-4f43-9f5a-d7a298fbbfe8" />
+
+<img width="1281" height="1223" alt="KarlsruheMetric-topDown" src="https://github.com/user-attachments/assets/19a12c23-4d84-44c7-82d9-c86f5059e618" />
+
+### Mercator sphere prjection divided by Karlsruhe Metric Voronoi diagram
+
+<img width="1574" height="883" alt="Karlsruhe-nearest-many-mercator" src="https://github.com/user-attachments/assets/c6520154-54b9-4a81-aca0-9acab5e04d72" />
 
 
 ## 🚀 Getting Started
