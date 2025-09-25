@@ -41,7 +41,7 @@ This project explores the extension of the Karlsruhe metric to spherical geometr
 
 ### Azimuthal sphere prjection divided by Geodesic Metric Voronoi diagram
 
-<img width="1281" height="1223" alt="KarlsruheMetric-topDown" src="https://github.com/user-attachments/assets/19a12c23-4d84-44c7-82d9-c86f5059e618" />
+<img width="1184" height="593" alt="Karlsruhe-nearest-many-azimuthal" src="https://github.com/user-attachments/assets/45bfe649-5346-4c9a-9c42-5a51e123fa4f" />
 
 ### Mercator sphere prjection divided by Karlsruhe Metric Voronoi diagram
 
