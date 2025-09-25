@@ -5,26 +5,26 @@ using UnityEngine.UI;
 public class UIManager : MonoBehaviour
 {
     [Header("Sphere")]
-    public GameObject sphereObject;
-	private SphereGenerator _sphereGenerator;
-	private GrowVoronoi _growAnimator;
-	private RotateSphere _rotateAnimator;
+    [SerializeField] public GameObject sphereObject;
+    [SerializeField] private SphereGenerator _sphereGenerator;
+    [SerializeField] private GrowVoronoi _growAnimator;
+    [SerializeField] private RotateSphere _rotateAnimator;
 
 	[Header("Display Settings")]
-    public Toggle showPolesInput;
-    public Toggle showCoordGridInput;
-    public Toggle rotateSphereInput;
-    public TMP_InputField rotationSpeedInput;
+    [SerializeField] public Toggle showPolesInput;
+    [SerializeField] public Toggle showCoordGridInput;
+    [SerializeField] public Toggle rotateSphereInput;
+    [SerializeField] public TMP_InputField rotationSpeedInput;
 
     [Header("Generator Settings")]
-    public TMP_InputField numOfPointsInput;
-    public TMP_InputField pointRadiusInput;
+    [SerializeField] public TMP_InputField numOfPointsInput;
+    [SerializeField] public TMP_InputField pointRadiusInput;
 
     [Header("Metric Settings")]
-    public TMP_Dropdown metricTypeInput;
-    public Toggle useClosestDistanceInput;
-    public Toggle growAnimationActiveInput;
-    public TMP_InputField growSpeedInput;
+    [SerializeField] public TMP_Dropdown metricTypeInput;
+    [SerializeField] public Toggle useClosestDistanceInput;
+    [SerializeField] public Toggle growAnimationActiveInput;
+    [SerializeField] public TMP_InputField growSpeedInput;
 
     void Start()
     {

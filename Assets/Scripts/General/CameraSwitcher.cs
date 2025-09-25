@@ -3,7 +3,7 @@ using UnityEngine;
 
 public class CameraSwitcher : MonoBehaviour
 {
-    public Camera[] cameras;
+    [SerializeField] public Camera[] cameras;
 
     public void SwitchCamera()
     {

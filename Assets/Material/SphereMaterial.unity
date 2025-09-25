@@ -243,6 +243,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   sphere: {fileID: 2104122771}
+  _projectionMaterial: {fileID: 0}
   voronoiShader: {fileID: 4800000, guid: 8f179c933a729224e9a42801cc0a9238, type: 3}
   isNorthCenter: 0
 --- !u!1 &28301997
@@ -3122,6 +3123,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   sphereObject: {fileID: 2104122771}
+  _sphereGenerator: {fileID: 0}
+  _growAnimator: {fileID: 0}
+  _rotateAnimator: {fileID: 0}
   showPolesInput: {fileID: 1229355018}
   showCoordGridInput: {fileID: 552087754}
   rotateSphereInput: {fileID: 1534333110}
@@ -3146,8 +3150,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cameras:
   - {fileID: 963194227}
-  - {fileID: 515330786}
   - {fileID: 859889611}
+  - {fileID: 515330786}
 --- !u!1 &856302576
 GameObject:
   m_ObjectHideFlags: 0
@@ -6420,6 +6424,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   sphere: {fileID: 2104122771}
+  _projectionMaterial: {fileID: 0}
   voronoiShader: {fileID: 4800000, guid: e818f8e2defe3484b93570cb8ac5711a, type: 3}
 --- !u!114 &1609918692
 MonoBehaviour:
@@ -7489,6 +7494,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   sphere: {fileID: 2104122771}
+  _projectionMaterial: {fileID: 0}
   voronoiShader: {fileID: 4800000, guid: 8f179c933a729224e9a42801cc0a9238, type: 3}
   isNorthCenter: 1
 --- !u!1 &1912458555
@@ -8247,9 +8253,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _metricType: 1
   voronoiShader: {fileID: 4800000, guid: d44107bc6b0809046baa0e9cf5a8b83a, type: 3}
+  _sphereMaterial: {fileID: 0}
   mercatorProjection: {fileID: 1609918686}
+  _mercatorProjectionData: {fileID: 0}
   azimuthalProjectionNp: {fileID: 1894861410}
+  _azimuthalProjectionNpData: {fileID: 0}
   azimuthalProjectionSp: {fileID: 16602807}
+  _azimuthalProjectionSpData: {fileID: 0}
 --- !u!114 &2104122777
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8279,6 +8289,7 @@ MonoBehaviour:
   growVoronoi: 0
   growSpeed: 0.05
   mercatorProjection: {fileID: 1609918686}
+  _mercatorProjectionData: {fileID: 0}
 --- !u!114 &2104122779
 MonoBehaviour:
   m_ObjectHideFlags: 0

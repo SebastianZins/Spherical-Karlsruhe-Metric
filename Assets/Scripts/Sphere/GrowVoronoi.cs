@@ -7,8 +7,8 @@ public class GrowVoronoi : MonoBehaviour
     private float _growPercentage = 0f;
     private bool _growDirBigger = true;
 
-    public GameObject mercatorProjection;
-    private CreateMercatorProjection _mercatorProjectionData;
+    [SerializeField] public GameObject mercatorProjection;
+    [SerializeField] private CreateMercatorProjection _mercatorProjectionData;
 
     private void Start()
     {

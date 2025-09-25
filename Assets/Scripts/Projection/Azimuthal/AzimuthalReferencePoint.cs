@@ -8,10 +8,10 @@ public class AzimuthalReferencePoint : MonoBehaviour
     private Vector2 _projectionScale;
     private Color _color;
     private float _sphereRadius;
-    private GameObject _innerCircle;
-    private Material _innerCircleMaterial;
-    private ReferencePointHandler _ogPoint;
-    public SphereGenerator _sphereGenerator;
+    [SerializeField] private GameObject _innerCircle;
+    [SerializeField] private Material _innerCircleMaterial;
+    [SerializeField] private ReferencePointHandler _ogPoint;
+    [SerializeField] public SphereGenerator _sphereGenerator;
     private bool _isNorthCenter;
 
     public void InitializePoint(ReferencePointHandler spherePoint, Transform parent, Vector2 projectionScale, SphereGenerator sphereGenerator, bool isNorthCenter)

@@ -1,14 +1,15 @@
 using System.Collections.Generic;
 using System.Linq;
+using TMPro;
 using UnityEngine;
 
 public class CreateMercatorProjection : MonoBehaviour
 {
     [Header("Projection Settings")]
-    public GameObject sphere;
+    [SerializeField] public GameObject sphere;
 
-    private Material _projectionMaterial;
-    public Shader voronoiShader;
+    [SerializeField] private Material _projectionMaterial;
+    [SerializeField] public Shader voronoiShader;
 
     private EMetricType _metricType = EMetricType.Spherical;
     private bool _useClosestDistance = true;

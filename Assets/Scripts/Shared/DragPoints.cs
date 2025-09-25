@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class PointDragger : MonoBehaviour
 {
-    public Camera cam;
+    [SerializeField] public Camera cam;
     private bool isDragging = false;
     private Transform selectedChild;
 

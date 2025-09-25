@@ -5,7 +5,7 @@ public class ZoomWithTransform : MonoBehaviour
     private float _zoomSpeed = 10f;
     private float _minDistance = 2f;
     private float _maxDistance = 20f;
-    public GameObject sphere;
+    [SerializeField] public GameObject sphere;
 
     private void Start()
     {

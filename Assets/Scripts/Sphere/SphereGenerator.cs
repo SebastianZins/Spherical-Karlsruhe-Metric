@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using TMPro;
 using UnityEngine;
 
 public class SphereGenerator : MonoBehaviour
@@ -13,16 +14,16 @@ public class SphereGenerator : MonoBehaviour
     private bool _useClosestDistance = true;
     private bool _showPoles = true;
 
-    public Shader voronoiShader;
-    private Material _sphereMaterial;
+    [SerializeField] public Shader voronoiShader;
+    [SerializeField] private Material _sphereMaterial;
 
-    public GameObject mercatorProjection;
-    private CreateMercatorProjection _mercatorProjectionData;
+    [SerializeField] public GameObject mercatorProjection;
+    [SerializeField] private CreateMercatorProjection _mercatorProjectionData;
 
-    public GameObject azimuthalProjectionNp;
-    private CreateAzimuthalProjection _azimuthalProjectionNpData;
-    public GameObject azimuthalProjectionSp;
-    private CreateAzimuthalProjection _azimuthalProjectionSpData;
+    [SerializeField] public GameObject azimuthalProjectionNp;
+    [SerializeField] private CreateAzimuthalProjection _azimuthalProjectionNpData;
+    [SerializeField] public GameObject azimuthalProjectionSp;
+    [SerializeField] private CreateAzimuthalProjection _azimuthalProjectionSpData;
 
     [HideInInspector]
     public bool showCoordGrid
