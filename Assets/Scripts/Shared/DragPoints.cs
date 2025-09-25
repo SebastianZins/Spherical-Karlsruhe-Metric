@@ -16,11 +16,12 @@ public class PointDragger : MonoBehaviour
         if (Input.GetMouseButtonDown(0))
         {
             Ray ray = cam.ScreenPointToRay(Input.mousePosition);
-            if (Physics.Raycast(ray, out RaycastHit hit))
+            if (Physics.Raycast(ray, out RaycastHit hit) && cam.enabled)
             {
-                if (hit.transform != null && hit.transform.CompareTag(Constants.REFERENCE_POINT_TAG))
+                var a = hit.collider.transform.tag;
+                if (hit.transform != null && hit.collider.transform.CompareTag(Constants.REFERENCE_POINT_TAG))
                 {
-                    selectedChild = hit.transform;
+                    selectedChild = hit.collider.transform;
                     isDragging = true;
                 }
             }
@@ -46,7 +47,7 @@ public class PointDragger : MonoBehaviour
                     spherePoint.SetEuclideanPosition(transform.position + direction * radius);
                 }
 
-                AzimuthalReferencePoint mercatorProjectionPoint = selectedChild.GetComponent<AzimuthalReferencePoint>();
+                MercatorReferencePoint mercatorProjectionPoint = selectedChild.GetComponent<MercatorReferencePoint>();
                 if (mercatorProjectionPoint != null)
                 {
                     Vector3 localHitPoint = transform.InverseTransformPoint(hit.point);
@@ -60,6 +61,26 @@ public class PointDragger : MonoBehaviour
                     Vector3 clampedWorldPoint = transform.TransformPoint(localHitPoint);
 
                     mercatorProjectionPoint.DragPointPosition(clampedWorldPoint);
+                }
+
+                AzimuthalReferencePoint azimuthalReferencePoint = selectedChild.GetComponent<AzimuthalReferencePoint>();
+                if (azimuthalReferencePoint == null)
+                {
+                    azimuthalReferencePoint = selectedChild.parent.GetComponent<AzimuthalReferencePoint>();
+                }
+                if (azimuthalReferencePoint != null)
+                {
+                    Vector3 localHitPoint = transform.InverseTransformPoint(hit.point);
+
+                    float halfWidth = transform.localScale.x * 0.5f;
+                    float halfHeight = transform.localScale.z * 0.5f;
+                    localHitPoint.x = Mathf.Clamp(localHitPoint.x, -halfWidth, halfWidth);
+                    localHitPoint.z = Mathf.Clamp(localHitPoint.z, -halfHeight, halfHeight);
+                    localHitPoint.y = 1f;
+
+                    Vector3 clampedWorldPoint = transform.TransformPoint(localHitPoint);
+
+                    azimuthalReferencePoint.DragPointPosition(clampedWorldPoint);
                 }
             }
         }

@@ -36,6 +36,8 @@ public class AzimuthalReferencePoint : MonoBehaviour
         _innerCircleMaterial = new Material(Shader.Find("Unlit/Color"));
         _innerCircleMaterial.color = spherePoint.color;
         _innerCircle.GetComponent<Renderer>().material = _innerCircleMaterial;
+        _innerCircle.transform.tag = Constants.REFERENCE_POINT_TAG;
+        _innerCircle.transform.name = "Inner Circle";
 
         _projectionScale = projectionScale;
 
@@ -66,6 +68,7 @@ public class AzimuthalReferencePoint : MonoBehaviour
         transform.position = pos;
         _euclideanPosition = transform.localPosition; 
         _sphericalPosition = FromAzimuthalProjection();
+
         _sphericalPosition = normalizeSphericalCoord(_sphericalPosition);
         _ogPoint.SetSphericalPosition(_ogPoint.radius, _sphericalPosition);
         _sphereGenerator.UpdatePointPositionSpherical();
@@ -92,7 +95,7 @@ public class AzimuthalReferencePoint : MonoBehaviour
     {
         transform.localScale = new Vector3(
             pointRadius / _projectionScale.x,
-            0.1f,
+            2f,
             pointRadius / _projectionScale.y
         );
     }
@@ -138,7 +141,7 @@ public class AzimuthalReferencePoint : MonoBehaviour
         float x = Mathf.Sin(phi) * Mathf.Cos(theta) * 0.5f;
         float z = Mathf.Sin(phi) * Mathf.Sin(theta) * 0.5f;
 
-        return new Vector3(x, 1f, z);
+        return new Vector3(x, 2f, z);
     }
 
     private void SetWorldPosition(Vector3 localPoint)
